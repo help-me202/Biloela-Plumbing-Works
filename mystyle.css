@@ -1,5 +1,5 @@
 body {
-  background-image: url('logo.jpg');
+  background-color: white;
   background-size: cover;
   background-attachment: scroll;
   background-repeat: no-repeat;
@@ -32,74 +32,82 @@ body {
 }
 
 h1 {
-  color:rgb(11, 102, 222);
+  color: rgb(11, 102, 222);
   margin: 20px 0 0 80px;
-  font-size:50px;
+  font-size: 50px;
 }
 
 p {
-	color:rgb(76, 137, 215);
-  	text-align: center;
-	font-size:35px;
-	margin: 0 0 18px;
+  color: rgb(76, 137, 215);
+  text-align: center;
+  font-size: 35px;
+  margin: 0 0 18px;
 }
- .image-container {
-        text-align: left;
-        margin: 135px 20px 20px;
-    }
-    .image-container img,
-    .gas-requests img {
-        display: block;
-        margin: 0 auto;
-        width: 220px;
-        height: auto;
-        max-width: 100%;
-    }
-    .large-image {
-        width: 260px;
-        max-width: 100%;
-        height: auto;
-    }
-    .image-container a {
-        display: inline-block;
-        margin-top: 8px; /* Space between image and link */
-        text-decoration: none;
-        color: white;
-        font-weight: bold;
-        padding: 10px 18px;
-        border: none;
-        border-radius: 8px;
-        background-color: rgba(16, 108, 145, 0.08);
-    }
-    .image-container a:hover {
-        text-decoration: underline;
-    }
-    .services-row {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 40px;
-        margin: 50px auto 20px;
-        flex-wrap: wrap;
-        max-width: 900px;
-    }
-    .gas-requests {
-        text-align: center;
-        margin: 20px;
-    }
-    .gas-requests a {
-        display: block;
-        margin: 12px auto 0;
-        width: fit-content;
-        padding: 10px 20px;
-        background-color: rgba(17, 165, 223, 0.1);
-        color:white;
-        text-decoration: none;
-        font-weight: bold;
-        border-radius: 6px;
-    }
-    .gas-requests a:hover {
-        text-decoration: underline;
-    }
-  
 
+.image-container {
+  text-align: left;
+  margin: 135px 20px 20px;
+}
+
+.image-container img,
+.gas-requests img {
+  display: block;
+  margin: 0 auto;
+  width: 220px;
+  height: auto;
+  max-width: 100%;
+}
+
+.large-image {
+  width: 260px;
+  max-width: 100%;
+  height: auto;
+}
+
+.image-container a {
+  display: inline-block;
+  margin-top: 8px;
+  /* Space between image and link */
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: rgba(16, 108, 145, 0.08);
+}
+
+.image-container a:hover {
+  text-decoration: underline;
+}
+
+.services-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin: 50px auto 20px;
+  flex-wrap: wrap;
+  max-width: 900px;
+}
+
+.gas-requests {
+  text-align: center;
+  margin: 20px;
+}
+
+.gas-requests a {
+  display: block;
+  margin: 12px auto 0;
+  width: fit-content;
+  padding: 10px 20px;
+  background-color: rgba(17, 165, 223, 0.1);
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+.gas-requests a:hover {
+  text-decoration: underline;
+}
