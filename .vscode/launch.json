@@ -1,0 +1,12 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "chrome", // or "pwa-chrome"
+      "request": "launch",
+      "name": "Launch Chrome against localhost",
+      "url": "http://localhost:3000", // Replace with your URL
+      "webRoot": "${workspaceFolder}"
+    }
+  ]
+}

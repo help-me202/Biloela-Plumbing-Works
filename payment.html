@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Payment — Biloela Waste & Recycling</title>
+  <link rel="stylesheet" href="payment.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Make a Payment</h1>
+
+    <form id="payment-form" novalidate>
+      <div class="row">
+        <label for="name">Full name</label>
+        <input id="name" name="name" type="text" required placeholder="Jane Doe">
+      </div>
+
+      <div class="row">
+        <label for="email">Email</label>
+        <input id="email" name="email" type="email" required placeholder="you@example.com">
+      </div>
+
+      <div class="row">
+        <label for="amount">Amount (AUD)</label>
+        <input id="amount" name="amount" type="number" min="0" step="0.01" required value="50.00">
+      </div>
+
+      <fieldset class="card">
+        <legend>Card details (mock)</legend>
+
+        <div class="row">
+          <label for="card">Card number</label>
+          <input id="card" name="card" type="text" inputmode="numeric" pattern="[0-9\s]{13,19}" maxlength="19" placeholder="1234 5678 9012 3456" required>
+        </div>
+
+        <div class="inline">
+          <div class="row small">
+            <label for="exp">Expiry (MM/YY)</label>
+            <input id="exp" name="exp" type="text" placeholder="08/26" pattern="^(0[1-9]|1[0-2])\/(\d{2})$" required>
+          </div>
+
+          <div class="row small">
+            <label for="cvc">CVC</label>
+            <input id="cvc" name="cvc" type="text" inputmode="numeric" pattern="\d{3,4}" maxlength="4" placeholder="123" required>
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="actions">
+        <button id="pay-btn" type="submit">Pay now</button>
+      </div>
+
+      <div id="message" role="status" aria-live="polite"></div>
+    </form>
+  </main>
+
+  <script src="payment.js"></script>
+</body>
+</html>

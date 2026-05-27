@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="gasrequest.css" />
+    <title>Gas Request</title>
+  </head>
+  <body>
+    <header class="top-header">
+      <a href="contact us.html" target="_blank">
+        <span>Contact us</span>
+      </a>
+    </header>
+    <h1>Gas Request</h1>
+    <p>Please fill out the form below to request a gas collection.</p>
+    <form class="form" novalidate>
+      <label for="name">Name:</label><br />
+      <input type="text" id="name" name="name" required /><br /><br />
+
+      <label for="address">Address:</label><br />
+      <input type="text" id="address" name="address" required /><br /><br />
+
+      <label for="contact">Contact Number:</label><br />
+      <input type="tel" id="contact" name="contact" required /><br /><br />
+
+      <label for="email">Email:</label><br />
+      <input type="email" id="email" name="email" /><br /><br />
+
+      <label for="postcode">Postcode:</label><br />
+      <input type="text" id="postcode" name="postcode" required /><br /><br />
+
+      <label for="size">Size:</label><br />
+      <select id="size" name="Size" required onchange="checkFulfillmentLogic()">
+        <option value="">Choose size</option>
+        <!-- Added data-weight to track the numerical value -->
+        <option value="3.7kg" data-weight="3.7">3.7kg</option>
+        <option value="8.5kg" data-weight="8.5">8.5kg</option>
+        <option value="13kg" data-weight="13">13kg</option>
+        <option value="15kg" data-weight="15">15kg</option>
+        <option value="18kg" data-weight="18">18kg</option>
+        <option value="45kg" data-weight="45">45kg</option>
+      </select>
+      <br /><br />
+      <label for="quantity">Quantity:</label><br />
+      <input
+        type="number"
+        id="quantity"
+        name="Quantity"
+        min="1"
+        value="1"
+        required
+      /><br /><br />
+
+      <label for="fulfillment">Fulfillment Method:</label><br />
+      <select
+        id="fulfillment"
+        name="Fulfillment"
+        required
+        onchange="checkFulfillmentLogic()"
+      >
+        <option value="">Choose method</option>
+        <option value="pickup">In-Store Pick Up</option>
+        <option value="delivery" id="deliveryOption">Delivery</option>
+      </select>
+
+      <br /><br />
+      <div id="price-info" class="price-info" style="display: none">
+        <p id="price-summary"></p>
+        <p id="delivery-fee"></p>
+        <p id="stock-summary"></p>
+      </div>
+
+      <p id="delivery-payment" class="delivery-payment" style="display: none">
+        If you choose delivery, please <a href="payment.html">pay here</a> for
+        delivery fees.
+      </p>
+
+      <input
+        type="hidden"
+        id="calculatedPrice"
+        name="calculatedPrice"
+        value=""
+      />
+      <div id="order-result" class="order-result" aria-live="polite"></div>
+      <input type="submit" id="submit-btn" value="Submit Request" />
+    </form>
+    <script src="gasrequest.js"></script>
+  </body>
+</html>
