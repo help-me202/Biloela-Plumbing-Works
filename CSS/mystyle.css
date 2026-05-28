@@ -1,0 +1,210 @@
+body {
+  background-color: white;
+  background-size: cover;
+  background-attachment: scroll;
+  background-repeat: no-repeat;
+  background-position: center center;
+  font-family: 'Frank Ruhl Libre', serif;
+  margin: 0;
+  padding: 0;
+}
+
+.top-header {
+  background-color: white;
+  color: black;
+  padding: 15px 30px;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 25px;
+  font-size: 18px;
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.top-header span {
+  color: black;
+}
+
+.top-header a {
+  color: black;
+  text-decoration: underline;
+}
+
+.top-header a:hover {
+  text-decoration: underline;
+}
+
+.header-image-block {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.header-image-block img {
+  max-width: 100%;
+  height: auto;
+}
+
+.header-banner {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../images/truck.jpg');
+  background-size: cover;
+  background-position: center;
+  padding: 100px 20px;
+  text-align: center;
+  margin-bottom: 0;
+  border-radius: 4px;
+}
+
+.header-banner p {
+  color: #ffffff;
+  margin: 0;
+}
+
+h1 {
+  color: #ffffff;
+  font-family: 'Frank Ruhl Libre', serif;
+  margin: 0;
+  font-size: 50px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+p {
+  color: rgb(76, 137, 215);
+  text-align: center;
+  font-size: 35px;
+  margin: 0 0 18px;
+}
+
+.image-container {
+  text-align: left;
+  margin: 135px 20px 20px;
+}
+
+.image-container img,
+.gas-requests img {
+  display: block;
+  margin: 0 auto;
+  width: 220px;
+  height: auto;
+  max-width: 100%;
+}
+
+.large-image {
+  width: 260px;
+  max-width: 100%;
+  height: auto;
+}
+
+.image-container a {
+  display: inline-block;
+  margin-top: 8px;
+  /* Space between image and link */
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background-color: rgba(16, 108, 145, 0.08);
+}
+
+.image-container a:hover {
+  text-decoration: underline;
+}
+
+.services-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin: 50px auto 20px;
+  flex-wrap: wrap;
+  max-width: 900px;
+}
+
+.gas-requests {
+  text-align: center;
+  margin: 20px;
+}
+
+.gas-requests a {
+  display: block;
+  margin: 12px auto 0;
+  width: fit-content;
+  padding: 10px 20px;
+  background-color: rgba(17, 165, 223, 0.1);
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  border-radius: 6px;
+}
+
+.gas-requests a:hover {
+  text-decoration: underline;
+}
+
+.peach-block {
+  background-color: #fff5ec;
+  padding: 40px 20px;
+  text-align: center;
+  margin: 0 0 20px 0;
+  border-radius: 4px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.peach-block h2 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 32px;
+  display: inline-block;
+  border-bottom: 3px solid #dd22a8;
+  padding-bottom: 5px;
+}
+
+.peach-block p {
+  color: #444;
+  font-size: 22px;
+  text-align: center;
+}
+
+.main-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 20px;
+}
+
+.peach-block,
+.image-blocks {
+  flex: 1 1 300px;
+  /* Sit side by side, wrap on small screens */
+}
+
+.image-blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  align-items: center;
+}
+
+.image-blocks img {
+  width: 60%;
+  height: auto;
+  object-fit: cover;
+  transform: rotate(-2deg);
+}
+
+.image-blocks img:first-child {
+  margin-left: -90px;
+}
+
+.image-blocks img:nth-child(even) {
+  width: 55%;
+  transform: rotate(9deg);
+  margin-top: -15px;
+  margin-left: 200px;
+  position: relative;
+  z-index: 1;
+}

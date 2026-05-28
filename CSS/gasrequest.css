@@ -1,29 +1,35 @@
 body {
-  background-image: url('logo.jpg');
+  background-color: white;
   background-size: cover;
   background-attachment: scroll;
   background-repeat: no-repeat;
   background-position: center center;
-  font-family: cursive;
+  font-family: 'Frank Ruhl Libre', serif;
   margin: 0;
   padding: 0;
 }
 
 .top-header {
-  background-color: #dd22a8;
-  color: white;
+  background-color: white;
+  color: black;
   padding: 15px 30px;
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 25px;
   font-size: 18px;
   font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .top-header span {
-  color: white;
+  color: black;
 }
 
 .top-header a {
-  color: white;
+  color: black;
   text-decoration: underline;
 }
 
@@ -31,16 +37,45 @@ body {
   text-decoration: underline;
 }
 
+.header-banner {
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../images/truck.jpg');
+  background-size: cover;
+  background-position: center;
+  padding: 100px 20px;
+  text-align: center;
+  margin-bottom: 30px;
+  border-radius: 4px;
+}
+
+.header-banner p {
+  color: #ffffff;
+  font-size: 35px;
+  margin: 0;
+}
+
+h1 {
+  color: #ffffff;
+  font-family: 'Frank Ruhl Libre', serif;
+  margin: 0;
+  font-size: 50px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+}
+
 .contact-container {
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   border-radius: 10px;
   padding: 20px;
   max-width: 400px;
   margin: 20px auto;
 }
+
 .form {
   margin-bottom: 15px;
-background-color: rgba(255, 255, 255, 0.8);
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   border-radius: 10px;
   padding: 20px;
   max-width: 400px;
@@ -49,7 +84,7 @@ background-color: rgba(255, 255, 255, 0.8);
 
 .price-info {
   display: block;
-  background: rgba(255, 255, 255, 0.92);
+  background-color: #ffffff;
   border: 1px solid #dd22a8;
   border-radius: 10px;
   padding: 12px 14px;
@@ -67,13 +102,17 @@ background-color: rgba(255, 255, 255, 0.8);
 
 .order-result {
   display: block;
-  background: rgba(255, 255, 255, 0.92);
+  background-color: #ffffff;
   border: 1px solid #22a8dd;
   color: #111;
   border-radius: 10px;
   padding: 12px 14px;
   margin-bottom: 16px;
   font-weight: 600;
+}
+
+.order-result:empty {
+  display: none;
 }
 
 .order-result.error {

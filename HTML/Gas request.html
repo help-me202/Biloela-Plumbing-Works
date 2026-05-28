@@ -3,17 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" type="text/css" href="gasrequest.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" type="text/css" href="../CSS/gasrequest.css" />
     <title>Gas Request</title>
   </head>
   <body>
     <header class="top-header">
-      <a href="contact us.html" target="_blank">
+      <a href="index.html" style="font-size: 0.9rem">
+        <span>Return to Home</span>
+      </a>
+      <a href="contact us.html" target="_blank" style="font-size: 0.9rem">
         <span>Contact us</span>
       </a>
     </header>
-    <h1>Gas Request</h1>
-    <p>Please fill out the form below to request a gas collection.</p>
+    <div class="header-banner">
+      <h1>Gas Request</h1>
+      <p>Please fill out the form below to request a gas collection.</p>
+    </div>
     <form class="form" novalidate>
       <label for="name">Name:</label><br />
       <input type="text" id="name" name="name" required /><br /><br />
@@ -42,6 +53,16 @@
         <option value="45kg" data-weight="45">45kg</option>
       </select>
       <br /><br />
+
+      <div id="type-container" style="display: none">
+        <label for="gas-type">Type:</label><br />
+        <select id="gas-type" name="Gas Type">
+          <option value="exchange">Exchange</option>
+          <option value="forklift">Forklift</option>
+        </select>
+        <br /><br />
+      </div>
+
       <label for="quantity">Quantity:</label><br />
       <input
         type="number"
@@ -68,12 +89,13 @@
       <div id="price-info" class="price-info" style="display: none">
         <p id="price-summary"></p>
         <p id="delivery-fee"></p>
+        <p id="gst-amount"></p>
         <p id="stock-summary"></p>
       </div>
 
       <p id="delivery-payment" class="delivery-payment" style="display: none">
-        If you choose delivery, please <a href="payment.html">pay here</a> for
-        delivery fees.
+        If you choose delivery, please
+        <a href="payment.html">pay here</a> for delivery fees.
       </p>
 
       <input
@@ -85,6 +107,6 @@
       <div id="order-result" class="order-result" aria-live="polite"></div>
       <input type="submit" id="submit-btn" value="Submit Request" />
     </form>
-    <script src="gasrequest.js"></script>
+    <script src="../JSON/gasrequest.js"></script>
   </body>
 </html>

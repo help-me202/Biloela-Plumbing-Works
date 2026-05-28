@@ -7,6 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const priceInfo = document.getElementById("price-info");
   const priceSummary = document.getElementById("price-summary");
   const deliveryFeeEl = document.getElementById("delivery-fee");
+  const gstAmountEl = document.getElementById("gst-amount");
   const stockSummary = document.getElementById("stock-summary");
   const deliveryPayment = document.getElementById("delivery-payment");
   const calculatedPrice = document.getElementById("calculatedPrice");
@@ -14,6 +15,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.querySelector("form.form");
 
   let availableStock = null;
+
+  const orderResult = document.getElementById("order-result");
+
+  function updateOrderResult(message, type = "info") {
+    orderResult.textContent = message;
+    orderResult.className = `order-result ${type}`;
+  }
 
   function setResult(message, isError = false) {
     priceSummary.textContent = message;
@@ -26,18 +34,33 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updatePriceInfo() {
+    updateOrderResult("", "info");
+
     function checkFulfillmentLogic() {
       const sizeSelect = document.getElementById("size");
       const fulfillmentSelect = document.getElementById("fulfillment");
       const deliveryOption = document.getElementById("deliveryOption");
+      const typeContainer = document.getElementById("type-container");
 
       // Exit early if no size is chosen yet
-      if (!sizeSelect.value) return;
+      if (!sizeSelect.value) {
+        if (typeContainer) typeContainer.style.display = "none";
+        return;
+      }
 
       // Get numerical weight from the chosen size option
       const selectedSizeOption = sizeSelect.options[sizeSelect.selectedIndex];
       const weightAttr = selectedSizeOption.getAttribute("data-weight");
       const weight = weightAttr ? parseFloat(weightAttr) : 0;
+
+      // Logic for secondary type (Exchange or Forklift)
+      if (typeContainer) {
+        if (weight === 15 || weight === 18) {
+          typeContainer.style.display = "block";
+        } else {
+          typeContainer.style.display = "none";
+        }
+      }
 
       // Logic for items under 18kg
       if (weight < 18) {
@@ -86,13 +109,21 @@ document.addEventListener("DOMContentLoaded", () => {
       .then((data) => {
         priceInfo.style.display = "block";
         availableStock = data.available;
-        calculatedPrice.value = data.price;
 
-        priceSummary.innerHTML = `Selected: <strong>${data.product.name} ${data.product.size}</strong> — Total ${collection === "delivery" ? "delivery" : "store"} price <strong>AUD ${data.price.toFixed(2)}</strong>.`;
+        const itemFee = collection === "delivery" ? data.deliveryFee : 0;
+        const subtotal = data.basePrice * quantity + itemFee;
+        const gst = subtotal * 0.1;
+        const totalPrice = subtotal + gst;
+        calculatedPrice.value = totalPrice.toFixed(2);
+
+        priceSummary.innerHTML = `Selected: <strong>${data.product.name} ${data.product.size}</strong> x ${quantity} — Subtotal ${collection === "delivery" ? "delivery" : "store"} price <strong>AUD ${subtotal.toFixed(2)}</strong>.`;
         deliveryFeeEl.textContent =
           collection === "delivery"
             ? `Delivery fee: AUD ${data.deliveryFee.toFixed(2)} (zone: ${data.zone.name})`
             : `Store pickup price applies. Delivery fee is not included.`;
+        if (gstAmountEl) {
+          gstAmountEl.innerHTML = `GST (10%): AUD ${gst.toFixed(2)} <br> <strong>Total (inc. GST): AUD ${totalPrice.toFixed(2)}</strong>`;
+        }
         stockSummary.textContent = `Stock available in ${data.zone.name}: ${data.available} unit${data.available === 1 ? "" : "s"}.`;
 
         if (quantity > data.available) {
@@ -102,7 +133,12 @@ document.addEventListener("DOMContentLoaded", () => {
           submitBtn.disabled = true;
         } else {
           stockSummary.style.color = "#111";
-          submitBtn.disabled = false;
+          submitBtn.disabled = collection === "delivery";
+        }
+
+        const payLink = deliveryPayment.querySelector("a");
+        if (payLink) {
+          payLink.href = `payment.html?amount=${totalPrice.toFixed(2)}`;
         }
       })
       .catch((error) => {
@@ -110,18 +146,14 @@ document.addEventListener("DOMContentLoaded", () => {
         priceInfo.style.display = "block";
         setResult(error.message, true);
         deliveryFeeEl.textContent = "";
+        if (gstAmountEl) {
+          gstAmountEl.textContent = "";
+        }
         stockSummary.textContent = "";
         calculatedPrice.value = "";
         availableStock = null;
-        submitBtn.disabled = false;
+        submitBtn.disabled = true;
       });
-  }
-
-  const orderResult = document.getElementById("order-result");
-
-  function updateOrderResult(message, type = "info") {
-    orderResult.textContent = message;
-    orderResult.className = `order-result ${type}`;
   }
 
   sizeEl.addEventListener("change", updatePriceInfo);
@@ -184,7 +216,7 @@ document.addEventListener("DOMContentLoaded", () => {
         updateOrderResult(error.message, "error");
       })
       .finally(() => {
-        submitBtn.disabled = false;
+        submitBtn.disabled = collection === "delivery";
       });
   });
 
