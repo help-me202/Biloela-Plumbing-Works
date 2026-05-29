@@ -1,16 +1,23 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
-require("dotenv").config();
+const path = require("path");
+// Tell dotenv to look for the .env file in the parent directory
+require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 const { Client } = require("@googlemaps/google-maps-services-js");
 const nodemailer = require("nodemailer");
+const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 const port = process.env.PORT || 3000;
-const path = require("path");
 
 app.use(cors());
 app.use(express.json());
-// Serve static frontend files from the project root
-app.use(express.static(path.join(__dirname)));
+// Serve static frontend files from the parent directory (project root)
+app.use(express.static(path.join(__dirname, "..")));
+
+// Redirect the base URL to the main homepage
+app.get("/", (req, res) => {
+  res.redirect("/HTML/index.html");
+});
 
 const googleMapsClient = new Client({});
 
@@ -289,6 +296,35 @@ app.post("/api/notify-payment", async (req, res) => {
   } catch (err) {
     console.error("Failed to send payment notification email:", err);
     res.status(500).json({ error: "Failed to send email" });
+  }
+});
+
+app.post("/api/create-checkout-session", async (req, res) => {
+  const { name, email, amount } = req.body;
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card", "au_becs_debit"], // Supports cards & Australian bank accounts
+      customer_email: email,
+      line_items: [
+        {
+          price_data: {
+            currency: "aud",
+            product_data: {
+              name: "Biloela Plumbing Works - Gas Order",
+            },
+            unit_amount: Math.round(parseFloat(amount) * 100), // Stripe requires amounts in cents
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: "http://localhost:3000/HTML/Gas%20request.html?paid=true",
+      cancel_url: `http://localhost:3000/HTML/payment.html?amount=${amount}`,
+    });
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error("Stripe error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
