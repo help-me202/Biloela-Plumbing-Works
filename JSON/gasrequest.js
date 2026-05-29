@@ -183,6 +183,13 @@ document.addEventListener("DOMContentLoaded", () => {
     event.preventDefault();
     orderResult.textContent = "";
 
+    const nameEl = document.getElementById("name");
+    const nameValue = nameEl ? nameEl.value.trim() : "";
+    if (!nameValue.includes(" ") || nameValue.split(/\s+/).length < 2) {
+      updateOrderResult("Please enter both your first and last name.", "error");
+      return;
+    }
+
     const quantity = Number(quantityEl.value) || 0;
     if (availableStock !== null && quantity > availableStock) {
       updateOrderResult(

@@ -27,7 +27,7 @@
     </div>
     <form class="form" novalidate>
       <label for="name">Name:</label><br />
-      <input type="text" id="name" name="name" required /><br /><br />
+      <input type="text" id="name" name="name" required pattern=".*\s+.*" title="Please enter your first and last name" /><br /><br />
 
       <label for="address">Address:</label><br />
       <input type="text" id="address" name="address" required /><br /><br />
