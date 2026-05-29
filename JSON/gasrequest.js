@@ -24,6 +24,14 @@ document.addEventListener("DOMContentLoaded", () => {
     orderResult.className = `order-result ${type}`;
   }
 
+  // Check if we came back from a successful payment
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get("paid") === "true") {
+    updateOrderResult("Paid request has been sent", "success");
+    // Clear the URL parameter so it doesn't persist on refresh
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+
   function setResult(message, isError = false) {
     priceSummary.textContent = message;
     priceSummary.style.color = isError ? "#b91c1c" : "#111";
@@ -160,6 +168,8 @@ document.addEventListener("DOMContentLoaded", () => {
         // Show an error message if the address is missing for delivery
         if (collection === "delivery" && !address) {
           updateOrderResult("Please enter an address for delivery pricing.", "error");
+        } else if (error.message === "Product size not found" || error.message === "Product not found") {
+          updateOrderResult("", "info");
         } else {
            updateOrderResult(error.message, "error");
         }
@@ -189,6 +199,11 @@ document.addEventListener("DOMContentLoaded", () => {
       updateOrderResult("Please enter both your first and last name.", "error");
       return;
     }
+
+    const emailEl = document.getElementById("email");
+    const emailValue = emailEl ? emailEl.value.trim() : "";
+    const contactEl = document.getElementById("contact");
+    const contactValue = contactEl ? contactEl.value.trim() : "";
 
     const quantity = Number(quantityEl.value) || 0;
     if (availableStock !== null && quantity > availableStock) {
@@ -226,7 +241,16 @@ document.addEventListener("DOMContentLoaded", () => {
     fetch(`${apiBase}/api/reserve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ size, date, quantity, collection, address }),
+      body: JSON.stringify({ 
+        name: nameValue, 
+        email: emailValue, 
+        contact: contactValue, 
+        size, 
+        date, 
+        quantity, 
+        collection, 
+        address 
+      }),
     })
       .then(async (response) => {
         const data = await response.json().catch(() => ({}));
@@ -236,15 +260,20 @@ document.addEventListener("DOMContentLoaded", () => {
         return data;
       })
       .then((data) => {
-        updateOrderResult(
-          `Order reserved successfully. Reserved ${data.reserved} unit${data.reserved === 1 ? "" : "s"}. Remaining stock: ${data.remaining}.`,
-          "success",
-        );
+        let successMsg = `Order reserved successfully. Reserved ${data.reserved} unit${data.reserved === 1 ? "" : "s"}. Remaining stock: ${data.remaining}.`;
+        if (collection !== "delivery") {
+          successMsg += " Please pay upon collection.";
+        }
+        updateOrderResult(successMsg, "success");
         updatePriceInfo();
       })
       .catch((error) => {
         console.error("Reservation API Error:", error);
-        updateOrderResult(error.message, "error");
+        if (error.message === "Product size not found" || error.message === "Product not found") {
+          updateOrderResult("Order request submitted. Please pay upon collection.", "success");
+        } else {
+          updateOrderResult(error.message, "error");
+        }
       })
       .finally(() => {
         submitBtn.disabled = collection === "delivery";

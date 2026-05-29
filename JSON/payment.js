@@ -70,10 +70,21 @@ document.addEventListener("DOMContentLoaded", () => {
       payBtn.disabled = false;
       const masked = "•••• •••• •••• " + cardRaw.slice(-4);
       setMessage(
-        `Payment of AUD ${amount.toFixed(2)} succeeded using ${masked}. Thank you, ${name}!`,
+        `Payment of AUD ${amount.toFixed(2)} succeeded using ${masked}. Thank you, ${name}! Redirecting...`,
         false,
       );
+      
+      // Notify backend of payment
+      fetch("http://localhost:3000/api/notify-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, amount }),
+      }).catch(err => console.error("Payment notification error:", err));
+
       form.reset();
+      setTimeout(() => {
+        window.location.href = "Gas request.html?paid=true";
+      }, 1500);
     }, 1200);
   });
 });

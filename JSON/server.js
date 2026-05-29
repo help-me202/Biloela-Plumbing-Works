@@ -3,6 +3,7 @@ const cors = require("cors");
 const app = express();
 require("dotenv").config();
 const { Client } = require("@googlemaps/google-maps-services-js");
+const nodemailer = require("nodemailer");
 const port = process.env.PORT || 3000;
 const path = require("path");
 
@@ -12,6 +13,16 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
 const googleMapsClient = new Client({});
+
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT || 587,
+  secure: process.env.SMTP_SECURE === "true", // true for port 465, false for other ports
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
 
 const zones = [
   { id: 1, name: "Biloela", postcodes: ["4715"], deliveryFee: 12.0 },
@@ -96,7 +107,8 @@ app.get("/api/zones", (req, res) => {
 
 async function getDistance(address) {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-  if (!apiKey) throw new Error("Google Maps API key is not configured on the server.");
+  if (!apiKey)
+    throw new Error("Google Maps API key is not configured on the server.");
   if (!address) throw new Error("Address is required to calculate distance.");
 
   const response = await googleMapsClient.distancematrix({
@@ -113,7 +125,9 @@ async function getDistance(address) {
     const distanceInMeters = result.distance.value;
     return parseFloat((distanceInMeters / 1000).toFixed(1));
   } else {
-    throw new Error(`Could not calculate distance for that address. Status: ${result.status}`);
+    throw new Error(
+      `Could not calculate distance for that address. Status: ${result.status}`,
+    );
   }
 }
 
@@ -153,10 +167,15 @@ app.get("/api/price", async (req, res, next) => {
           distanceVal = await getDistance(address);
         } catch (err) {
           console.error("Distance error in /api/price:", err.message);
-          // If we fail to get distance, we might fallback to 0 or throw. 
+          // If we fail to get distance, we might fallback to 0 or throw.
           // Let's fallback to 0 for now so they still get a price, or you can throw.
           // Throwing is safer for correct pricing.
-          return res.status(400).json({ error: "Could not calculate distance for delivery to that address." });
+          return res
+            .status(400)
+            .json({
+              error:
+                "Could not calculate distance for delivery to that address.",
+            });
         }
       }
 
@@ -199,8 +218,9 @@ app.get("/api/price", async (req, res, next) => {
   }
 });
 
-app.post("/api/reserve", (req, res) => {
-  const { size, date, quantity, address } = req.body;
+app.post("/api/reserve", async (req, res) => {
+  const { name, email, contact, size, date, quantity, collection, address } =
+    req.body;
   if (!size || !date || !quantity) {
     return res
       .status(400)
@@ -224,11 +244,43 @@ app.post("/api/reserve", (req, res) => {
   );
   if (record) record.qty = record.qty - quantity;
 
+  // Send notification email for the reservation
+  try {
+    await transporter.sendMail({
+      from:
+        process.env.EMAIL_USER ||
+        '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
+      to: "workshop@biloelaplumbingworks.com, service@biloelaplumbingworks.com",
+      subject: `New Gas Request - ${name || "Customer"}`,
+      text: `A new gas request has been submitted.\n\nName: ${name || "N/A"}\nEmail: ${email || "N/A"}\nPhone: ${contact || "N/A"}\nSize: ${size}\nQuantity: ${quantity}\nDate: ${date}\nFulfillment: ${collection || "store"}\nAddress: ${address || "N/A"}`,
+    });
+  } catch (err) {
+    console.error("Failed to send reservation email:", err);
+  }
+
   res.json({
     success: true,
     reserved: quantity,
     remaining: getInventory(product.id, zone.id),
   });
+});
+
+app.post("/api/notify-payment", async (req, res) => {
+  const { name, email, amount } = req.body;
+  try {
+    await transporter.sendMail({
+      from:
+        process.env.EMAIL_USER ||
+        '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
+      to: "workshop@biloelaplumbingworks.com, service@biloelaplumbingworks.com",
+      subject: `New Payment Received - ${name || "Customer"}`,
+      text: `A payment has been successfully processed.\n\nName: ${name || "N/A"}\nEmail: ${email || "N/A"}\nAmount Paid: AUD ${amount}`,
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Failed to send payment notification email:", err);
+    res.status(500).json({ error: "Failed to send email" });
+  }
 });
 
 app.get("/api/distance", async (req, res, next) => {
