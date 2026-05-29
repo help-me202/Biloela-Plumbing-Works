@@ -38,8 +38,8 @@
       <label for="email">Email:</label><br />
       <input type="email" id="email" name="email" /><br /><br />
 
-      <label for="postcode">Postcode:</label><br />
-      <input type="text" id="postcode" name="postcode" required /><br /><br />
+      <label for="date">Date:</label><br />
+      <input type="date" id="date" name="date" required /><br /><br />
 
       <label for="size">Size:</label><br />
       <select id="size" name="Size" required onchange="checkFulfillmentLogic()">
@@ -86,6 +86,13 @@
       </select>
 
       <br /><br />
+      <div id="distance-container" style="display: none">
+        <label for="distance">Calculated Distance from 5 Dunn St (km):</label
+        ><br />
+        <input type="number" id="distance" name="distance" readonly />
+        <br /><br />
+      </div>
+
       <div id="price-info" class="price-info" style="display: none">
         <p id="price-summary"></p>
         <p id="delivery-fee"></p>
