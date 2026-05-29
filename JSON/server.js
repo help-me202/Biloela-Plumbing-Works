@@ -94,72 +94,113 @@ app.get("/api/zones", (req, res) => {
   );
 });
 
-app.get("/api/price", (req, res) => {
-  const { size, date, collection, distance } = req.query;
-  if (!size) {
-    return res.status(400).json({ error: "Missing size query parameter" });
+async function getDistance(address) {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) throw new Error("Google Maps API key is not configured on the server.");
+  if (!address) throw new Error("Address is required to calculate distance.");
+
+  const response = await googleMapsClient.distancematrix({
+    params: {
+      origins: ["5 Dunn St, Biloela QLD 4715, Australia"],
+      destinations: [address],
+      key: apiKey,
+    },
+    timeout: 2000,
+  });
+
+  const result = response.data.rows[0].elements[0];
+  if (result.status === "OK") {
+    const distanceInMeters = result.distance.value;
+    return parseFloat((distanceInMeters / 1000).toFixed(1));
+  } else {
+    throw new Error(`Could not calculate distance for that address. Status: ${result.status}`);
   }
+}
 
-  const product = getProduct(size);
-  if (!product) {
-    return res.status(404).json({ error: "Product size not found" });
-  }
+app.get("/api/price", async (req, res, next) => {
+  try {
+    const { size, date, collection, address } = req.query;
+    if (!size) {
+      return res.status(400).json({ error: "Missing size query parameter" });
+    }
 
-  const zone = findZone();
-  const collectionType = collection === "store" ? "store" : "delivery";
-  const distanceVal = parseFloat(distance) || 0;
-  const available = getInventory(product.id, zone.id);
+    const product = getProduct(size);
+    if (!product) {
+      return res.status(404).json({ error: "Product size not found" });
+    }
 
-  const zonePrice = zonePrices.find(
-    (r) => r.productId === product.id && r.zoneId === zone.id,
-  );
-  const basePrice =
-    zonePrice && typeof zonePrice.overridePrice === "number"
-      ? zonePrice.overridePrice
-      : product.basePrice;
+    const zone = findZone();
+    const collectionType = collection === "store" ? "store" : "delivery";
+    const available = getInventory(product.id, zone.id);
 
-  // Check if the selected date is a Tuesday (Day 2 of the week)
-  const isTuesday = date ? new Date(date).getUTCDay() === 2 : false;
+    const zonePrice = zonePrices.find(
+      (r) => r.productId === product.id && r.zoneId === zone.id,
+    );
+    const basePrice =
+      zonePrice && typeof zonePrice.overridePrice === "number"
+        ? zonePrice.overridePrice
+        : product.basePrice;
 
-  let deliveryFee = 0;
-  if (collectionType === "delivery") {
-    if (product.size === "45kg") {
-      if (!isTuesday) {
-        deliveryFee = 190.0 - basePrice; // $209 inc gst -> $190 ex gst
-      } else {
-        if (distanceVal <= 15) {
-          deliveryFee = 170.0 - basePrice; // $187 inc gst -> $170 ex gst
-        } else if (distanceVal <= 30) {
-          deliveryFee = 220.0 - basePrice; // $242 inc gst -> $220 ex gst
-        } else {
-          deliveryFee = 240.0 - basePrice; // $264 inc gst -> $240 ex gst
+    // Check if the selected date is a Tuesday (Day 2 of the week)
+    const isTuesday = date ? new Date(date).getUTCDay() === 2 : false;
+
+    let deliveryFee = 0;
+    let distanceVal = 0;
+
+    if (collectionType === "delivery") {
+      if (address) {
+        try {
+          distanceVal = await getDistance(address);
+        } catch (err) {
+          console.error("Distance error in /api/price:", err.message);
+          // If we fail to get distance, we might fallback to 0 or throw. 
+          // Let's fallback to 0 for now so they still get a price, or you can throw.
+          // Throwing is safer for correct pricing.
+          return res.status(400).json({ error: "Could not calculate distance for delivery to that address." });
         }
       }
-      deliveryFee = Math.max(0, deliveryFee);
-    } else {
-      deliveryFee =
-        distanceVal > 0
-          ? BASE_DELIVERY_FEE + distanceVal * COST_PER_KM
-          : zone.deliveryFee;
+
+      if (product.size === "45kg") {
+        if (!isTuesday) {
+          deliveryFee = 190.0 - basePrice; // $209 inc gst -> $190 ex gst
+        } else {
+          if (distanceVal <= 15) {
+            deliveryFee = 170.0 - basePrice; // $187 inc gst -> $170 ex gst
+          } else if (distanceVal <= 30) {
+            deliveryFee = 220.0 - basePrice; // $242 inc gst -> $220 ex gst
+          } else {
+            deliveryFee = 240.0 - basePrice; // $264 inc gst -> $240 ex gst
+          }
+        }
+        deliveryFee = Math.max(0, deliveryFee);
+      } else {
+        deliveryFee =
+          distanceVal > 0
+            ? BASE_DELIVERY_FEE + distanceVal * COST_PER_KM
+            : zone.deliveryFee;
+      }
     }
+
+    deliveryFee = Number(deliveryFee.toFixed(2));
+    const price = Number((basePrice + deliveryFee).toFixed(2));
+
+    res.json({
+      product,
+      zone: { id: zone.id, name: zone.name, deliveryFee: deliveryFee },
+      collection: collectionType,
+      basePrice,
+      deliveryFee: deliveryFee,
+      distance: distanceVal,
+      price,
+      available,
+    });
+  } catch (error) {
+    next(error);
   }
-
-  deliveryFee = Number(deliveryFee.toFixed(2));
-  const price = Number((basePrice + deliveryFee).toFixed(2));
-
-  res.json({
-    product,
-    zone: { id: zone.id, name: zone.name, deliveryFee: deliveryFee },
-    collection: collectionType,
-    basePrice,
-    deliveryFee: deliveryFee,
-    price,
-    available,
-  });
 });
 
 app.post("/api/reserve", (req, res) => {
-  const { size, date, quantity, distance } = req.body;
+  const { size, date, quantity, address } = req.body;
   if (!size || !date || !quantity) {
     return res
       .status(400)

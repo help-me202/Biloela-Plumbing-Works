@@ -84,14 +84,11 @@
         <option value="pickup">In-Store Pick Up</option>
         <option value="delivery" id="deliveryOption">Delivery</option>
       </select>
-
       <br /><br />
-      <div id="distance-container" style="display: none">
-        <label for="distance">Calculated Distance from 5 Dunn St (km):</label
-        ><br />
-        <input type="number" id="distance" name="distance" readonly />
-        <br /><br />
-      </div>
+      
+      <input type="submit" id="submit-btn" value="Submit Request" />
+
+
 
       <div id="price-info" class="price-info" style="display: none">
         <p id="price-summary"></p>
@@ -112,7 +109,6 @@
         value=""
       />
       <div id="order-result" class="order-result" aria-live="polite"></div>
-      <input type="submit" id="submit-btn" value="Submit Request" />
     </form>
     <script src="../JSON/gasrequest.js"></script>
   </body>

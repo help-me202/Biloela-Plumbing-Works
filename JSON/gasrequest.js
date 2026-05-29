@@ -5,7 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const addressEl = document.getElementById("address");
   const quantityEl = document.getElementById("quantity");
   const collectionEl = document.getElementById("fulfillment");
-  const distanceEl = document.getElementById("distance");
   const priceInfo = document.getElementById("price-info");
   const priceSummary = document.getElementById("price-summary");
   const deliveryFeeEl = document.getElementById("delivery-fee");
@@ -33,11 +32,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateDeliveryMessage() {
     deliveryPayment.style.display =
       collectionEl.value === "delivery" ? "block" : "none";
-
-    const distanceContainer = document.getElementById("distance-container");
-    if (distanceContainer)
-      distanceContainer.style.display =
-        collectionEl.value === "delivery" ? "block" : "none";
   }
 
   function updatePriceInfo() {
@@ -49,18 +43,15 @@ document.addEventListener("DOMContentLoaded", () => {
       const deliveryOption = document.getElementById("deliveryOption");
       const typeContainer = document.getElementById("type-container");
 
-      // Exit early if no size is chosen yet
       if (!sizeSelect.value) {
         if (typeContainer) typeContainer.style.display = "none";
         return;
       }
 
-      // Get numerical weight from the chosen size option
       const selectedSizeOption = sizeSelect.options[sizeSelect.selectedIndex];
       const weightAttr = selectedSizeOption.getAttribute("data-weight");
       const weight = weightAttr ? parseFloat(weightAttr) : 0;
 
-      // Logic for secondary type (Exchange or Forklift)
       if (typeContainer) {
         if (weight === 15 || weight === 18) {
           typeContainer.style.display = "block";
@@ -69,9 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      // Logic for items under 18kg
       if (weight < 18) {
-        // If user already chose delivery, alert them and revert it
         if (fulfillmentSelect.value === "delivery") {
           alert(
             "Gas bottles under 18kg are in store pick up only, please select in store.",
@@ -79,12 +68,9 @@ document.addEventListener("DOMContentLoaded", () => {
           fulfillmentSelect.value = "pickup";
           updateDeliveryMessage();
         }
-
-        // Hide and disable the delivery option
         deliveryOption.disabled = true;
         deliveryOption.style.display = "none";
       } else {
-        // Re-enable and show delivery for 18kg and above
         deliveryOption.disabled = false;
         deliveryOption.style.display = "block";
       }
@@ -96,7 +82,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const date = dateEl.value;
     const quantity = Number(quantityEl.value) || 0;
     const collection = collectionEl.value;
-    const distance = distanceEl ? distanceEl.value : 0;
+    const address = addressEl ? addressEl.value.trim() : "";
 
     if (!size || !date) {
       priceInfo.style.display = "none";
@@ -105,11 +91,13 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    // Only update price if collection is 'delivery' and address is empty, we still send the request, 
+    // but the backend might return an error if it can't calculate distance without an address.
     const params = new URLSearchParams({
       size,
       date,
       collection,
-      distance,
+      address,
     });
     fetch(`${apiBase}/api/price?${params}`)
       .then(async (response) => {
@@ -120,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return response.json();
       })
       .then((data) => {
-        priceInfo.style.display = "block";
+        priceInfo.style.display = data.product.size === "45kg" ? "none" : "block";
         availableStock = data.available;
 
         const itemFee = collection === "delivery" ? data.deliveryFee : 0;
@@ -128,11 +116,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const gst = subtotal * 0.1;
         const totalPrice = subtotal + gst;
         calculatedPrice.value = totalPrice.toFixed(2);
+        
+        const distanceText = data.distance > 0 ? `(${data.distance} km from 5 Dunn St)` : `(zone: ${data.zone.name})`;
 
         priceSummary.innerHTML = `Selected: <strong>${data.product.name} ${data.product.size}</strong> x ${quantity} — Subtotal ${collection === "delivery" ? "delivery" : "store"} price <strong>AUD ${subtotal.toFixed(2)}</strong>.`;
         deliveryFeeEl.textContent =
           collection === "delivery"
-            ? `Delivery fee: AUD ${data.deliveryFee.toFixed(2)} ${distance > 0 ? "(" + distance + " km from 5 Dunn St)" : "(zone: " + data.zone.name + ")"}`
+            ? `Delivery fee: AUD ${data.deliveryFee.toFixed(2)} ${distanceText}`
             : `Store pickup price applies. Delivery fee is not included.`;
         if (gstAmountEl) {
           gstAmountEl.innerHTML = `GST (10%): AUD ${gst.toFixed(2)} <br> <strong>Total (inc. GST): AUD ${totalPrice.toFixed(2)}</strong>`;
@@ -166,19 +156,27 @@ document.addEventListener("DOMContentLoaded", () => {
         calculatedPrice.value = "";
         availableStock = null;
         submitBtn.disabled = collection === "delivery";
+        
+        // Show an error message if the address is missing for delivery
+        if (collection === "delivery" && !address) {
+          updateOrderResult("Please enter an address for delivery pricing.", "error");
+        } else {
+           updateOrderResult(error.message, "error");
+        }
       });
   }
 
   sizeEl.addEventListener("change", updatePriceInfo);
   dateEl.addEventListener("input", updatePriceInfo);
   quantityEl.addEventListener("input", updatePriceInfo);
+  if (addressEl) {
+    addressEl.addEventListener("change", updatePriceInfo);
+    addressEl.addEventListener("blur", updatePriceInfo);
+  }
+  
   collectionEl.addEventListener("change", () => {
     updateDeliveryMessage();
-    if (collectionEl.value === "delivery" && addressEl.value.trim() && !distanceEl.value) {
-      calculateDistance();
-    } else {
-      updatePriceInfo();
-    }
+    updatePriceInfo();
   });
 
   form.addEventListener("submit", (event) => {
@@ -197,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const size = sizeEl.value;
     const date = dateEl.value;
     const collection = collectionEl.value;
-    const distance = distanceEl ? distanceEl.value : 0;
+    const address = addressEl ? addressEl.value.trim() : "";
 
     if (collection === "delivery") {
       updateOrderResult(
@@ -221,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fetch(`${apiBase}/api/reserve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ size, date, quantity, collection, distance }),
+      body: JSON.stringify({ size, date, quantity, collection, address }),
     })
       .then(async (response) => {
         const data = await response.json().catch(() => ({}));
@@ -246,53 +244,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   });
 
-  async function calculateDistance() {
-    const address = addressEl.value.trim();
-    if (!address) {
-      distanceEl.value = "";
-      updatePriceInfo(); // Recalculate if address is cleared
-      return;
-    }
-
-    // Give user feedback
-    distanceEl.value = "";
-    distanceEl.placeholder = "Calculating...";
-    updateOrderResult("Calculating distance...", "info");
-
-    try {
-      const response = await fetch(
-        `${apiBase}/api/distance?address=${encodeURIComponent(address)}`,
-      );
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Could not calculate distance.");
-      }
-
-      distanceEl.placeholder = "";
-      distanceEl.value = data.distance;
-      updateOrderResult("", "info"); // Clear calculating message
-    } catch (error) {
-      console.error("Distance calculation error:", error);
-      distanceEl.placeholder = "Could not calculate";
-      updateOrderResult(`Error: ${error.message}`, "error");
-    } finally {
-      // Always update the price info after attempting to get distance
-      updatePriceInfo();
-    }
-  }
-
-  if (addressEl) {
-    addressEl.addEventListener("blur", calculateDistance);
-    addressEl.addEventListener("change", calculateDistance);
-  }
-
   updateDeliveryMessage();
-  
-  // Calculate distance on load if address is pre-filled, else update price directly
-  if (addressEl && addressEl.value.trim() && !distanceEl.value) {
-    calculateDistance();
-  } else {
-    updatePriceInfo();
-  }
+  updatePriceInfo();
 });
