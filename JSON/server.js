@@ -24,6 +24,18 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Verify email connection on server startup
+transporter.verify((error, success) => {
+  if (error) {
+    console.error(
+      "⚠️ SMTP Connection Error: Cannot send emails. Check your .env file credentials.",
+      error,
+    );
+  } else {
+    console.log("✉️  SMTP Server is ready to send messages");
+  }
+});
+
 const zones = [
   { id: 1, name: "Biloela", postcodes: ["4715"], deliveryFee: 12.0 },
   { id: 2, name: "Moura", postcodes: ["4718"], deliveryFee: 15.0 },
@@ -170,12 +182,9 @@ app.get("/api/price", async (req, res, next) => {
           // If we fail to get distance, we might fallback to 0 or throw.
           // Let's fallback to 0 for now so they still get a price, or you can throw.
           // Throwing is safer for correct pricing.
-          return res
-            .status(400)
-            .json({
-              error:
-                "Could not calculate distance for delivery to that address.",
-            });
+          return res.status(400).json({
+            error: "Could not calculate distance for delivery to that address.",
+          });
         }
       }
 
@@ -250,7 +259,7 @@ app.post("/api/reserve", async (req, res) => {
       from:
         process.env.EMAIL_USER ||
         '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
-      to: "workshop@biloelaplumbingworks.com, service@biloelaplumbingworks.com",
+      to: "workshop@biloelaplumbingworks.com, service@biloelaplumbingworks.com, admin@biloelaplumbingworks.com",
       subject: `New Gas Request - ${name || "Customer"}`,
       text: `A new gas request has been submitted.\n\nName: ${name || "N/A"}\nEmail: ${email || "N/A"}\nPhone: ${contact || "N/A"}\nSize: ${size}\nQuantity: ${quantity}\nDate: ${date}\nFulfillment: ${collection || "store"}\nAddress: ${address || "N/A"}`,
     });
@@ -272,7 +281,7 @@ app.post("/api/notify-payment", async (req, res) => {
       from:
         process.env.EMAIL_USER ||
         '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
-      to: "workshop@biloelaplumbingworks.com, service@biloelaplumbingworks.com",
+      to: "workshop@biloelaplumbingworks.com, service@biloelaplumbingworks.com, admin@biloelaplumbingworks.com",
       subject: `New Payment Received - ${name || "Customer"}`,
       text: `A payment has been successfully processed.\n\nName: ${name || "N/A"}\nEmail: ${email || "N/A"}\nAmount Paid: AUD ${amount}`,
     });
