@@ -1,0 +1,71 @@
+body {
+    font-family: 'Frank Ruhl Libre', serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.top-header {
+    display: flex;
+    justify-content: flex-end;
+    background-color: #2c3e50;
+    padding: 10px 20px;
+    gap: 20px;
+}
+
+.top-header a {
+    color: #ecf0f1;
+    text-decoration: none;
+}
+
+.top-header a:hover {
+    text-decoration: underline;
+}
+
+.header-banner {
+    background-color: #ecf0f1;
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.header-banner h1 {
+    margin: 0 0 10px 0;
+    font-size: 2.5rem;
+}
+
+.partners-container {
+    max-width: 800px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.partner {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.partner img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+}
+
+.partner h2 {
+    text-align: center;
+    color: grey;
+    border-bottom: 3px solid hotpink;
+    /* Pink underline */
+    display: inline-block;
+    /* Keeps the underline strictly under the text */
+    padding-bottom: 5px;
+}
+
+.partner p {
+    line-height: 1.6;
+    text-align: left;
+    margin-top: 15px;
+}

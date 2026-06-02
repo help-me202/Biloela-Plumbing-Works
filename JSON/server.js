@@ -10,14 +10,6 @@ const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 const port = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json());
-// Serve static frontend files from the parent directory (project root)
-app.use(express.static(path.join(__dirname, "..")));
-
-// Redirect the base URL to the main homepage
-app.get("/", (req, res) => {
-  res.redirect("/HTML/index.html");
-});
 
 const googleMapsClient = new Client({});
 
@@ -43,6 +35,58 @@ transporter.verify((error, success) => {
   }
 });
 
+// Stripe Webhook - MUST be placed before express.json()
+app.post(
+  "/api/webhook",
+  express.raw({ type: "application/json" }),
+  async (req, res) => {
+    const sig = req.headers["stripe-signature"];
+
+    let event;
+    try {
+      // Verify that this event actually came from Stripe
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET,
+      );
+    } catch (err) {
+      console.error(`⚠️ Webhook Signature Error: ${err.message}`);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle successful payment
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      const email = session.customer_details?.email;
+      const name = session.customer_details?.name;
+      const amount = session.amount_total / 100;
+
+      try {
+        await transporter.sendMail({
+          from:
+            process.env.EMAIL_USER ||
+            '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
+          to: "workshop@biloelaplumbingworks.com, service@biloelaplumbingworks.com, admin@biloelaplumbingworks.com",
+          subject: `New Payment Received - ${name || "Customer"}`,
+          text: `A payment has been successfully processed via Stripe Checkout.\n\nName: ${name || "N/A"}\nEmail: ${email || "N/A"}\nAmount Paid: AUD ${amount.toFixed(2)}`,
+        });
+        console.log("✅ Webhook payment email sent!");
+      } catch (err) {
+        console.error("Failed to send payment notification email:", err);
+      }
+    }
+
+    res.send(); // Acknowledge receipt of the event
+  },
+);
+
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "..")));
+app.get("/", (req, res) => {
+  res.redirect("/HTML/index.html");
+});
+
 const zones = [
   { id: 1, name: "Biloela", postcodes: ["4715"], deliveryFee: 12.0 },
   { id: 2, name: "Moura", postcodes: ["4718"], deliveryFee: 15.0 },
@@ -53,41 +97,88 @@ const products = [
   {
     id: 1,
     name: "Gas Bottle",
+    size: "3.7kg",
+    basePrice: 0.0, // TODO: Update with correct price
+    sizeType: "small",
+  },
+  {
+    id: 2,
+    name: "Gas Bottle",
+    size: "8.5kg",
+    basePrice: 0.0, // TODO: Update with correct price
+    sizeType: "small",
+  },
+  {
+    id: 3,
+    name: "Gas Bottle",
     size: "9kg",
     basePrice: 60.0,
     sizeType: "small",
   },
   {
-    id: 2,
+    id: 4,
+    name: "Gas Bottle",
+    size: "13kg",
+    basePrice: 0.0, // TODO: Update with correct price
+    sizeType: "large",
+  },
+  {
+    id: 5,
     name: "Gas Bottle",
     size: "14kg",
     basePrice: 75.0,
     sizeType: "large",
   },
   {
-    id: 3,
+    id: 6,
+    name: "Gas Bottle",
+    size: "15kg",
+    basePrice: 0.0, // TODO: Update with correct price
+    sizeType: "large",
+  },
+  {
+    id: 7,
+    name: "Gas Bottle",
+    size: "18kg",
+    basePrice: 87.21, // Base price ex. GST ($95.93 inc. GST)
+    sizeType: "large",
+  },
+  {
+    id: 8,
     name: "Gas Bottle",
     size: "45kg",
     basePrice: 165.0, // Base price ex. GST ($181.50 inc. GST)
     sizeType: "xlarge",
   },
+  {
+    id: 9,
+    name: "Gas Bottle",
+    size: "18kg Forklift",
+    basePrice: 87.21, // TODO: Update with correct price if different
+    sizeType: "large",
+  },
+  {
+    id: 10,
+    name: "Gas Bottle",
+    size: "18kg Exchange",
+    basePrice: 87.21, // TODO: Update with correct price if different
+    sizeType: "large",
+  },
 ];
 
 const inventory = [
-  { productId: 1, zoneId: 1, qty: 10 },
-  { productId: 1, zoneId: 2, qty: 5 },
-  { productId: 1, zoneId: 3, qty: 3 },
-  { productId: 2, zoneId: 1, qty: 6 },
-  { productId: 2, zoneId: 2, qty: 4 },
-  { productId: 2, zoneId: 3, qty: 2 },
-  { productId: 3, zoneId: 1, qty: 20 },
-  { productId: 3, zoneId: 2, qty: 10 },
-  { productId: 3, zoneId: 3, qty: 5 },
+  { productId: 1, zoneId: 1, qty: 3 }, // 3.7kg
+  { productId: 2, zoneId: 1, qty: 8 }, // 8.5kg
+  { productId: 4, zoneId: 1, qty: 8 }, // 13kg
+  { productId: 6, zoneId: 1, qty: 8 }, // 15kg
+  { productId: 8, zoneId: 1, qty: 10 }, // 45kg
+  { productId: 9, zoneId: 1, qty: 7 }, // 18kg Forklift
+  { productId: 10, zoneId: 1, qty: 1 }, // 18kg Exchange
 ];
 
 const zonePrices = [
-  { productId: 1, zoneId: 1, overridePrice: 62.0 },
-  { productId: 2, zoneId: 1, overridePrice: 80.0 },
+  { productId: 3, zoneId: 1, overridePrice: 62.0 }, // 9kg
+  { productId: 5, zoneId: 1, overridePrice: 80.0 }, // 14kg
 ];
 
 function findZone() {
@@ -207,6 +298,13 @@ app.get("/api/price", async (req, res, next) => {
             deliveryFee = 240.0 - basePrice; // $264 inc gst -> $240 ex gst
           }
         }
+        deliveryFee = Math.max(0, deliveryFee);
+      } else if (
+        product.size === "18kg" ||
+        product.size === "18kg Forklift" ||
+        product.size === "18kg Exchange"
+      ) {
+        deliveryFee = 87.21 - basePrice; // Forces total delivered to $87.21 ex GST ($95.93 inc GST)
         deliveryFee = Math.max(0, deliveryFee);
       } else {
         deliveryFee =

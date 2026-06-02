@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Only update price if collection is 'delivery' and address is empty, we still send the request, 
+    // Only update price if collection is 'delivery' and address is empty, we still send the request,
     // but the backend might return an error if it can't calculate distance without an address.
     const params = new URLSearchParams({
       size,
@@ -116,7 +116,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return response.json();
       })
       .then((data) => {
-        priceInfo.style.display = data.product.size === "45kg" ? "none" : "block";
+        priceInfo.style.display =
+          data.product.size === "45kg" ? "none" : "block";
         availableStock = data.available;
 
         const itemFee = collection === "delivery" ? data.deliveryFee : 0;
@@ -124,16 +125,19 @@ document.addEventListener("DOMContentLoaded", () => {
         const gst = subtotal * 0.1;
         const totalPrice = subtotal + gst;
         calculatedPrice.value = totalPrice.toFixed(2);
-        
-        const distanceText = data.distance > 0 ? `(${data.distance} km from 5 Dunn St)` : `(zone: ${data.zone.name})`;
 
-        priceSummary.innerHTML = `Selected: <strong>${data.product.name} ${data.product.size}</strong> x ${quantity} — Subtotal ${collection === "delivery" ? "delivery" : "store"} price <strong>AUD ${subtotal.toFixed(2)}</strong>.`;
+        const distanceText =
+          data.distance > 0
+            ? `(${data.distance} km from 5 Dunn St)`
+            : `(zone: ${data.zone.name})`;
+
+        priceSummary.innerHTML = `Selected: <strong>${data.product.name} ${data.product.size}</strong> x ${quantity} — Subtotal ${collection === "delivery" ? "approximate delivery" : "store"} price <strong>AUD ${subtotal.toFixed(2)}</strong>.`;
         deliveryFeeEl.textContent =
           collection === "delivery"
-            ? `Delivery fee: AUD ${data.deliveryFee.toFixed(2)} ${distanceText}`
+            ? `Approximate delivery fee: AUD ${data.deliveryFee.toFixed(2)} ${distanceText}`
             : `Store pickup price applies. Delivery fee is not included.`;
         if (gstAmountEl) {
-          gstAmountEl.innerHTML = `GST (10%): AUD ${gst.toFixed(2)} <br> <strong>Total (inc. GST): AUD ${totalPrice.toFixed(2)}</strong>`;
+          gstAmountEl.innerHTML = `GST (10%): AUD ${gst.toFixed(2)} <br> <strong>${collection === "delivery" ? "Approximate Total" : "Total"} (inc. GST): AUD ${totalPrice.toFixed(2)}</strong>`;
         }
         stockSummary.textContent = `Stock available in ${data.zone.name}: ${data.available} unit${data.available === 1 ? "" : "s"}.`;
 
@@ -164,14 +168,20 @@ document.addEventListener("DOMContentLoaded", () => {
         calculatedPrice.value = "";
         availableStock = null;
         submitBtn.disabled = collection === "delivery";
-        
+
         // Show an error message if the address is missing for delivery
         if (collection === "delivery" && !address) {
-          updateOrderResult("Please enter an address for delivery pricing.", "error");
-        } else if (error.message === "Product size not found" || error.message === "Product not found") {
+          updateOrderResult(
+            "Please enter an address for delivery pricing.",
+            "error",
+          );
+        } else if (
+          error.message === "Product size not found" ||
+          error.message === "Product not found"
+        ) {
           updateOrderResult("", "info");
         } else {
-           updateOrderResult(error.message, "error");
+          updateOrderResult(error.message, "error");
         }
       });
   }
@@ -183,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
     addressEl.addEventListener("change", updatePriceInfo);
     addressEl.addEventListener("blur", updatePriceInfo);
   }
-  
+
   collectionEl.addEventListener("change", () => {
     updateDeliveryMessage();
     updatePriceInfo();
@@ -241,15 +251,15 @@ document.addEventListener("DOMContentLoaded", () => {
     fetch(`${apiBase}/api/reserve`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ 
-        name: nameValue, 
-        email: emailValue, 
-        contact: contactValue, 
-        size, 
-        date, 
-        quantity, 
-        collection, 
-        address 
+      body: JSON.stringify({
+        name: nameValue,
+        email: emailValue,
+        contact: contactValue,
+        size,
+        date,
+        quantity,
+        collection,
+        address,
       }),
     })
       .then(async (response) => {
@@ -269,8 +279,14 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch((error) => {
         console.error("Reservation API Error:", error);
-        if (error.message === "Product size not found" || error.message === "Product not found") {
-          updateOrderResult("Order request submitted. Please pay upon collection.", "success");
+        if (
+          error.message === "Product size not found" ||
+          error.message === "Product not found"
+        ) {
+          updateOrderResult(
+            "Order request submitted. Please pay upon collection.",
+            "success",
+          );
         } else {
           updateOrderResult(error.message, "error");
         }
