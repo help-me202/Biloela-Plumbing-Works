@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const apiBase = "http://localhost:3000";
+  const apiBase = ""; // Empty string allows relative paths for both localhost and live domain
   const sizeEl = document.getElementById("size");
   const dateEl = document.getElementById("date");
   const addressEl = document.getElementById("address");

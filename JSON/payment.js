@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     payBtn.disabled = true;
     setMessage("Redirecting to secure payment gateway...", false);
 
-    fetch("http://localhost:3000/api/create-checkout-session", {
+    fetch("/api/create-checkout-session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, amount }),

@@ -400,6 +400,8 @@ app.post("/api/notify-payment", async (req, res) => {
 app.post("/api/create-checkout-session", async (req, res) => {
   const { name, email, amount } = req.body;
   try {
+    // Dynamically get the current domain (works for localhost and live)
+    const domainURL = req.headers.origin || `http://${req.headers.host}`;
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "au_becs_debit"], // Supports cards & Australian bank accounts
       customer_email: email,
@@ -416,8 +418,8 @@ app.post("/api/create-checkout-session", async (req, res) => {
         },
       ],
       mode: "payment",
-      success_url: "http://localhost:3000/HTML/Gas%20request.html?paid=true",
-      cancel_url: `http://localhost:3000/HTML/payment.html?amount=${amount}`,
+      success_url: `${domainURL}/HTML/Gas%20request.html?paid=true`,
+      cancel_url: `${domainURL}/HTML/payment.html?amount=${amount}`,
     });
     res.json({ url: session.url });
   } catch (err) {
