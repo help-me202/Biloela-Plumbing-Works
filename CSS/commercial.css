@@ -65,20 +65,23 @@ h1 {
 
 .page-content {
     display: flex;
-    align-items: flex-start;
     justify-content: center;
-    gap: 40px;
+    align-items: flex-start;
     max-width: 1200px;
-    margin: 20px auto 40px;
+    margin: 40px auto;
     padding: 0 20px;
+    position: relative;
 }
 
 .image-block {
-    flex: 1;
-    max-width: 500px;
+    position: absolute;
+    left: 0;
+    top: 40px;
+    max-width: 220px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 80px;
+    z-index: 1;
 }
 
 .image-block img {
@@ -86,10 +89,34 @@ h1 {
     height: auto;
     border-radius: 10px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transform: rotate(-10deg);
+}
+
+.image-block .tank-image {
+    transform: rotate(15deg);
+    margin-left: 30px;
+}
+
+.text-column {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+}
+
+.pump-out {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 220px;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transform: rotate(8deg);
+    z-index: 1;
 }
 
 .service-container {
-    flex: 1;
     background-color: #f8f9fa;
     border: 1px solid #e0e0e0;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
@@ -135,5 +162,20 @@ h1 {
 @media (max-width: 768px) {
     .page-content {
         flex-direction: column;
+        align-items: center;
+    }
+
+    .image-block,
+    .pump-out {
+        position: static;
+        max-width: 80%;
+        margin: 20px auto;
+    }
+
+    .image-block img,
+    .image-block .tank-image,
+    .pump-out {
+        transform: none;
+        margin-left: 0;
     }
 }
