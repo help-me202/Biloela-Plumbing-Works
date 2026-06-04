@@ -37,6 +37,13 @@ body {
   text-decoration: underline;
 }
 
+.top-header img {
+  max-height: 50px;
+  width: auto;
+  object-fit: contain;
+  margin-right: auto;
+}
+
 .header-banner {
   background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../images/truck.jpg');
   background-size: cover;

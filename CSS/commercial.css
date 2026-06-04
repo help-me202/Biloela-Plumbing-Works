@@ -1,0 +1,139 @@
+body {
+    background-color: white;
+    font-family: 'Frank Ruhl Libre', serif;
+    margin: 0;
+    padding: 0;
+}
+
+.top-header {
+    background-color: white;
+    color: black;
+    padding: 15px 30px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 25px;
+    font-size: 18px;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.top-header span {
+    color: black;
+}
+
+.top-header a {
+    color: black;
+    text-decoration: underline;
+}
+
+.top-header a:hover {
+    text-decoration: underline;
+}
+
+.top-header img {
+    max-height: 50px;
+    width: auto;
+    object-fit: contain;
+    /* Ensures the image fits perfectly without stretching */
+    margin-right: auto;
+}
+
+.header-banner {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: white;
+    padding: 40px 20px;
+    text-align: center;
+    margin-bottom: 30px;
+    border-radius: 4px;
+}
+
+h1 {
+    color: #333;
+    font-family: 'Frank Ruhl Libre', serif;
+    margin: 0;
+    font-size: 50px;
+    border-bottom: 3px solid #dd22a8;
+    display: inline-block;
+    padding-bottom: 5px;
+}
+
+.page-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 40px;
+    max-width: 1200px;
+    margin: 20px auto 40px;
+    padding: 0 20px;
+}
+
+.image-block {
+    flex: 1;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.image-block img {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.service-container {
+    flex: 1;
+    background-color: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    border-radius: 10px;
+    padding: 40px;
+}
+
+.service-container h2 {
+    color: #333;
+    border-bottom: 3px solid #dd22a8;
+    display: inline-block;
+    padding-bottom: 5px;
+    margin-top: 0;
+    font-size: 32px;
+}
+
+.service-container p {
+    font-size: 20px;
+    color: #444;
+    line-height: 1.6;
+    margin: 15px 0;
+}
+
+.service-container ul {
+    font-size: 20px;
+    color: #444;
+    line-height: 1.6;
+}
+
+.site-footer {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    margin-top: 40px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.site-footer p {
+    margin: 0;
+}
+
+/* Stacks into a single column on mobile screens */
+@media (max-width: 768px) {
+    .page-content {
+        flex-direction: column;
+    }
+}

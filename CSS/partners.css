@@ -9,9 +9,11 @@ body {
 .top-header {
     display: flex;
     justify-content: flex-end;
+    align-items: center;
     background-color: white;
     padding: 10px 20px;
     gap: 20px;
+    font-weight: bold;
 }
 
 .top-header a {
@@ -21,6 +23,13 @@ body {
 
 .top-header a:hover {
     text-decoration: underline;
+}
+
+.top-header img {
+    max-height: 50px;
+    width: auto;
+    object-fit: contain;
+    margin-right: auto;
 }
 
 .header-banner {

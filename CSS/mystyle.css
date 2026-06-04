@@ -37,6 +37,13 @@ body {
   text-decoration: underline;
 }
 
+.top-header img {
+  max-height: 50px;
+  width: auto;
+  object-fit: contain;
+  margin-right: auto;
+}
+
 .header-image-block {
   text-align: center;
   padding: 20px 0;

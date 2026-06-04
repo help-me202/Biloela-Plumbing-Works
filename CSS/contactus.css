@@ -13,7 +13,10 @@ body {
   background-color: white;
   color: black;
   padding: 15px 30px;
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 25px;
   font-size: 18px;
   font-weight: bold;
   position: sticky;
@@ -32,6 +35,13 @@ body {
 
 .top-header a:hover {
   text-decoration: underline;
+}
+
+.top-header img {
+  max-height: 50px;
+  width: auto;
+  object-fit: contain;
+  margin-right: auto;
 }
 
 .header-banner {
