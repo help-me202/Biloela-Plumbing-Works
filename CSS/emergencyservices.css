@@ -1,5 +1,5 @@
 body {
-    background-color: white;
+    background-color: #fff5ec;
     font-family: 'Frank Ruhl Libre', serif;
     margin: 0;
     padding: 0;
@@ -45,21 +45,67 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../images/truck.jpg');
-    background-size: cover;
-    background-position: center;
-    padding: 100px 20px;
+    background-color: white;
+    padding: 40px 20px;
     text-align: center;
     margin-bottom: 30px;
     border-radius: 4px;
 }
 
 h1 {
-    color: #ffffff;
+    color: #333;
     font-family: 'Frank Ruhl Libre', serif;
     margin: 0;
     font-size: 50px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
+    display: inline-block;
+    padding-bottom: 5px;
+    position: relative;
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    height: 3px;
+    background-color: #dd22a8;
+}
+
+.page-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 50px;
+    max-width: 1200px;
+    margin: 10px auto 40px;
+    padding: 0 20px;
+}
+
+.image-block {
+    flex: 1;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.scatter.emergency-image {
+    width: 100%;
+    max-width: 450px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    object-fit: cover;
+    border: 3px solid #dd22a8;
+    transform: rotate(-2deg);
+}
+
+.text-column {
+    flex: 1;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
 }
 
 .service-container {
@@ -74,9 +120,10 @@ h1 {
 
 .service-container h2 {
     color: #333;
-    display: inline-block;
+    display: block;
+    text-align: center;
     margin-top: 0;
-    font-size: 32px;
+    font-size: 24px;
 }
 
 .service-container p {
@@ -90,6 +137,24 @@ h1 {
     font-size: 20px;
     color: #444;
     line-height: 1.6;
+}
+
+/* Stacks into a single column on mobile screens */
+@media (max-width: 900px) {
+    .page-content {
+        flex-direction: column;
+    }
+
+    .image-block {
+        justify-content: center;
+        margin-bottom: 20px;
+    }
+
+    .scatter.emergency-image {
+        transform: none;
+        max-width: 420px;
+        width: 80%;
+    }
 }
 
 .site-footer {
