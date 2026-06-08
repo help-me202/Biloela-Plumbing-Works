@@ -62,6 +62,112 @@ h1 {
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
 }
 
+.page-content {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 1200px;
+    margin: 10px auto 40px;
+    padding: 0 20px;
+    position: relative;
+}
+
+.image-block {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+/* Layout and residential image scatter positions */
+.scatter {
+    position: absolute;
+    width: clamp(88px, 12vw, 220px);
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    object-fit: cover;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    z-index: 1;
+    pointer-events: auto;
+    border: 3px solid #dd22a8;
+}
+
+.scatter.pos-left {
+    left: 4%;
+    top: 0%;
+    width: clamp(90px, 13vw, 220px);
+    transform: rotate(-6deg) scale(1.12);
+}
+
+.scatter.pos-left2 {
+    left: 4%;
+    top: 65%;
+    width: calc(clamp(88px, 12vw, 220px) + 3px);
+    transform: rotate(10deg) translateY(-6%);
+}
+
+.scatter.pos-right {
+    right: 3%;
+    top: 5%;
+    width: clamp(90px, 13vw, 220px);
+    transform: rotate(8deg) scale(1.02);
+}
+
+.scatter.bottom-right {
+    right: 2%;
+    bottom: 0%;
+    width: clamp(110px, 15vw, 260px);
+    transform: rotate(4deg) translateY(-4%);
+}
+
+.scatter.pos-right2 {
+    left: -8%;
+    bottom: -6%;
+    top: auto;
+    width: clamp(88px, 12vw, 160px);
+    transform: rotate(-6deg);
+    z-index: 3;
+}
+
+.text-column {
+    position: relative;
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+    margin: 0 clamp(120px, 18vw, 260px);
+}
+
+@media (max-width: 900px) {
+    .page-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .image-block {
+        position: static;
+        display: block;
+        width: 100%;
+        pointer-events: auto;
+        margin: 20px auto;
+        text-align: center;
+    }
+
+    .scatter {
+        position: static;
+        width: 80%;
+        max-width: 420px;
+        transform: none;
+        margin: 16px auto;
+    }
+
+    .text-column {
+        margin: 0;
+        padding: 0 12px;
+    }
+}
+
 .service-container {
     background-color: #f8f9fa;
     border: 1px solid #e0e0e0;
@@ -74,11 +180,10 @@ h1 {
 
 .service-container h2 {
     color: #333;
-    border-bottom: 3px solid #dd22a8;
-    display: inline-block;
-    padding-bottom: 5px;
+    display: block;
+    text-align: center;
     margin-top: 0;
-    font-size: 32px;
+    font-size: 24px;
 }
 
 .service-container p {

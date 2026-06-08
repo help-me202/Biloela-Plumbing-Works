@@ -74,9 +74,7 @@ h1 {
 
 .service-container h2 {
     color: #333;
-    border-bottom: 3px solid #dd22a8;
     display: inline-block;
-    padding-bottom: 5px;
     margin-top: 0;
     font-size: 32px;
 }

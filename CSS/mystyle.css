@@ -164,10 +164,9 @@ p {
 .peach-block h2 {
   color: #333;
   margin-bottom: 15px;
-  font-size: 32px;
-  display: inline-block;
-  border-bottom: 3px solid #dd22a8;
-  padding-bottom: 5px;
+  font-size: 24px;
+  display: block;
+  text-align: center;
 }
 
 .peach-block p {
