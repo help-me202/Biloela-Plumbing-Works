@@ -95,3 +95,15 @@ body {
     text-align: left;
     margin-top: 15px;
 }
+
+.site-footer {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    margin-top: 40px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.site-footer p {
+    margin: 0;
+}

@@ -215,3 +215,17 @@ p {
   position: relative;
   z-index: 1;
 }
+
+.site-footer {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+  margin-top: 40px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.site-footer p {
+  margin: 0;
+  font-size: 16px;
+  color: #666;
+}

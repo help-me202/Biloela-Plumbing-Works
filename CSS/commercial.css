@@ -58,9 +58,21 @@ h1 {
     font-family: 'Frank Ruhl Libre', serif;
     margin: 0;
     font-size: 50px;
-    border-bottom: 3px solid #dd22a8;
     display: inline-block;
     padding-bottom: 5px;
+    position: relative;
+}
+
+h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60%;
+    /* Adjust this percentage to make it shorter or longer */
+    height: 3px;
+    background-color: #dd22a8;
 }
 
 .page-content {
@@ -75,26 +87,68 @@ h1 {
 
 .image-block {
     position: absolute;
-    left: 0;
-    top: 40px;
-    max-width: 220px;
-    display: flex;
-    flex-direction: column;
-    gap: 80px;
-    z-index: 1;
+    inset: 0;
+    pointer-events: none;
 }
 
-.image-block img {
-    width: 100%;
+/* Base scattered image styling */
+.scatter {
+    position: absolute;
+    width: clamp(88px, 12vw, 220px);
     height: auto;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transform: rotate(-10deg);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    object-fit: cover;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    z-index: 1;
+    pointer-events: auto;
 }
 
-.image-block .tank-image {
-    transform: rotate(15deg);
-    margin-left: 30px;
+/* Example positions around the central text column */
+.scatter.pos-left {
+    left: -6%;
+    top: -10%;
+    width: calc(clamp(120px, 16vw, 280px) + 3px);
+    transform: rotate(-6deg) scale(1.12);
+}
+
+.scatter.pos-left2 {
+    left: 4%;
+    top: 55%;
+    width: calc(clamp(88px, 12vw, 220px) + 3px);
+    transform: rotate(10deg) translateY(-6%);
+}
+
+.scatter.pos-right {
+    right: 3%;
+    top: -20%;
+    width: clamp(110px, 15vw, 260px);
+    transform: rotate(8deg) scale(1.02);
+}
+
+/* Specific tweaks for the tank image (first left image): move up and make slightly smaller */
+.scatter.pos-left.tank-image {
+    left: 6%;
+    top: calc(-14% - 3px);
+    width: calc(clamp(120px, 16vw, 280px) - 10px);
+    transform: rotate(-6deg) scale(1.02) translateX(4px);
+}
+
+.scatter.bottom-right {
+    right: 2%;
+    bottom: 25%;
+    width: clamp(110px, 15vw, 260px);
+    transform: rotate(4deg) translateY(-4%);
+}
+
+/* Keep the text column centered and give it breathing room so images don't overlap the copy */
+.text-column {
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    z-index: 2;
+    margin: 0 clamp(120px, 18vw, 260px);
 }
 
 .text-column {
@@ -126,11 +180,22 @@ h1 {
 
 .service-container h2 {
     color: #333;
-    border-bottom: 3px solid #dd22a8;
     display: inline-block;
     padding-bottom: 5px;
     margin-top: 0;
     font-size: 32px;
+    position: relative;
+}
+
+.service-container h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 60px;
+    /* Adjust this fixed width to make it shorter or longer */
+    height: 3px;
+    background-color: #dd22a8;
 }
 
 .service-container p {
@@ -159,23 +224,32 @@ h1 {
 }
 
 /* Stacks into a single column on mobile screens */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
     .page-content {
         flex-direction: column;
         align-items: center;
     }
 
-    .image-block,
-    .pump-out {
+    /* On smaller screens list images below the text and remove absolute positioning */
+    .image-block {
         position: static;
-        max-width: 80%;
+        display: block;
+        width: 100%;
+        pointer-events: auto;
         margin: 20px auto;
+        text-align: center;
     }
 
-    .image-block img,
-    .image-block .tank-image,
-    .pump-out {
+    .scatter {
+        position: static;
+        width: 80%;
+        max-width: 420px;
         transform: none;
-        margin-left: 0;
+        margin: 16px auto;
+    }
+
+    .text-column {
+        margin: 0;
+        padding: 0 12px;
     }
 }
