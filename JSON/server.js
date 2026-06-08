@@ -366,7 +366,7 @@ app.post("/api/reserve", async (req, res) => {
         '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
       to: "workshop@biloelaplumbingworks.com, service@biloelaplumbingworks.com, admin@biloelaplumbingworks.com",
       subject: `New Gas Request - ${name || "Customer"}`,
-      text: `A new gas request has been submitted.\n\nName: ${name || "N/A"}\nEmail: ${email || "N/A"}\nPhone: ${contact || "N/A"}\nSize: ${size}\nQuantity: ${quantity}\nDate: ${date}\nFulfillment: ${collection || "store"}\nAddress: ${address || "N/A"}`,
+      text: `A new gas request has been submitted.\n\nName: ${name || "N/A"}\nEmail: ${email || "N/A"}\nPhone: ${contact || "N/A"}\nSize: ${size}\nQuantity: ${quantity}put \nDate: ${date}\nFulfillment: ${collection || "store"}\nAddress: ${address || "N/A"}`,
     });
   } catch (err) {
     console.error("Failed to send reservation email:", err);
@@ -394,6 +394,29 @@ app.post("/api/notify-payment", async (req, res) => {
   } catch (err) {
     console.error("Failed to send payment notification email:", err);
     res.status(500).json({ error: "Failed to send email" });
+  }
+});
+
+app.post("/api/contact", async (req, res) => {
+  const { name, phone, email } = req.body;
+
+  if (!name || !phone || !email) {
+    return res.status(400).json({ error: "Please fill out all fields." });
+  }
+
+  try {
+    await transporter.sendMail({
+      from:
+        process.env.EMAIL_USER ||
+        '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
+      to: "jobs@biloelaplumbingworks.com",
+      subject: `New Contact Enquiry - ${name}`,
+      text: `You have received a new contact enquiry via the website.\n\nName: ${name}\nPhone: ${phone}\nEmail: ${email}`,
+    });
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Failed to send contact enquiry email:", err);
+    res.status(500).json({ error: "Failed to send email. Please try again." });
   }
 });
 

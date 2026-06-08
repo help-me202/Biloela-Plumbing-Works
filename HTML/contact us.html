@@ -14,20 +14,139 @@
   </head>
   <body>
     <header class="top-header">
-      <a href="index.html" style="font-size: 0.9rem">
-        <span>Back to Home</span>
-      </a>
+      <img src="../images/logo.png" alt="Biloela Plumbing Works Logo" />
+      <a href="index.html" style="font-size: 0.9rem"><span>Home</span></a>
+      <a href="Plumbingservices.html" style="font-size: 0.9rem"
+        ><span>Plumbing Services</span></a
+      >
+      <a href="LPG-gas-information.html" style="font-size: 0.9rem"
+        ><span>LP Gas Services</span></a
+      >
+      <a href="partners.html" style="font-size: 0.9rem"
+        ><span>Partners</span></a
+      >
     </header>
     <div class="header-banner">
       <h1>Contact Us</h1>
       <p>Please get in touch with us for any inquiries</p>
     </div>
 
-    <div class="contact-container">
-      <p>Email: admin@bwrecycling.com.au</p>
-      <p>Phone: (07) 4992 6782</p>
-      <p>Address: 17 Dunn St, Biloela, QLD</p>
+    <div class="enquiry-section">
+      <h2>Send us an Enquiry</h2>
+      <form id="contact-form" class="enquiry-form">
+        <div class="form-inputs">
+          <div class="form-group">
+            <input type="text" id="enq-name" placeholder="Name" required />
+          </div>
+          <div class="form-group">
+            <input type="tel" id="enq-phone" placeholder="Phone" required />
+          </div>
+          <div class="form-group">
+            <input
+              type="email"
+              id="enq-email"
+              placeholder="Email Address"
+              required
+            />
+          </div>
+          <button type="submit">Contact Us</button>
+        </div>
+        <div id="enquiry-message"></div>
+      </form>
     </div>
+
+    <div class="contact-page-content">
+      <div class="contact-container">
+        <p>
+          <strong>Address:</strong><br />5 Dunn Street, Biloela QLD, Australia
+        </p>
+        <p>
+          <strong>Phone:</strong><br />
+          Office: (07) 4992 6782<br />
+          After Hours: 0429 931 915
+        </p>
+        <p><strong>Email:</strong><br />jobs@biloelaplumbingworks.com</p>
+        <p>
+          <strong>Hours:</strong><br />Mon-Fri - 09:00-17:00<br />Sat -
+          08:00-12:00
+        </p>
+      </div>
+      <div class="map-container">
+        <iframe
+          src="https://maps.google.com/maps?q=5%20Dunn%20Street,%20Biloela%20QLD,%20Australia&t=&z=15&ie=UTF8&iwloc=&output=embed"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        >
+        </iframe>
+      </div>
+    </div>
+
+    <div class="peach-block social-section">
+      <h3>Find us on</h3>
+      <div class="social-links">
+        <a
+          href="https://www.facebook.com/profile.php?id=100090330279717"
+          target="_blank"
+          class="social-link"
+        >
+          <img
+            src="../images/FB.webp"
+            alt="Facebook Logo"
+            class="social-icon fb-icon"
+          />
+        </a>
+        <a
+          href="https://www.instagram.com/biloelaplumbing/"
+          target="_blank"
+          class="social-link"
+        >
+          <img
+            src="../images/instagram.jpg"
+            alt="Instagram Logo"
+            class="social-icon"
+          />
+        </a>
+      </div>
+    </div>
+
+    <script>
+      document
+        .getElementById("contact-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const btn = this.querySelector("button");
+          const msg = document.getElementById("enquiry-message");
+
+          btn.disabled = true;
+          msg.textContent = "Sending...";
+          msg.style.color = "#333";
+
+          fetch("/api/contact", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              name: document.getElementById("enq-name").value,
+              phone: document.getElementById("enq-phone").value,
+              email: document.getElementById("enq-email").value,
+            }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.error) throw new Error(data.error);
+              msg.textContent = "Thank you! Your enquiry has been sent.";
+              msg.style.color = "#0b6623";
+              this.reset();
+            })
+            .catch((err) => {
+              msg.textContent =
+                err.message || "An error occurred. Please try again.";
+              msg.style.color = "#b91c1c";
+            })
+            .finally(() => (btn.disabled = false));
+        });
+    </script>
+
     <footer class="site-footer">
       <p>Biloela Plumbing Works Pty Ltd, &copy; 2026 All rights reserved.</p>
       <p>ABN: 61 137 850 769</p>
