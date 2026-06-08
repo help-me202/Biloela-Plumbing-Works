@@ -1,5 +1,5 @@
 body {
-    background-color: white;
+    background-color: #fff5ec;
     font-family: 'Frank Ruhl Libre', serif;
     margin: 0;
     padding: 0;
@@ -121,8 +121,8 @@ h1 {
 }
 
 .scatter.pos-right2 {
-    left: -8%;
-    bottom: -6%;
+    right: 10px;
+    bottom: 50px;
     top: auto;
     width: clamp(88px, 12vw, 160px);
     transform: rotate(-6deg);
