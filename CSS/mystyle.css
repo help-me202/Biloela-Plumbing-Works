@@ -153,20 +153,22 @@ p {
 }
 
 .peach-block {
-  background-color: #fff5ec;
+  background-color: #fffaf5;
   padding: 40px 20px;
   text-align: center;
   margin: 0 0 20px 0;
   border-radius: 4px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
 }
 
 .peach-block h2 {
   color: #333;
   margin-bottom: 15px;
   font-size: 24px;
-  display: block;
+  display: inline-block;
   text-align: center;
+  border-bottom: 3px solid #dd22a8;
+  padding-bottom: 5px;
 }
 
 .peach-block p {
