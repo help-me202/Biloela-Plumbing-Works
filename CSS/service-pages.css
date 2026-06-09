@@ -146,17 +146,37 @@ h1::after {
 
 /* Tweak to allow larger left-side images */
 .scatter.pos-left.large-image {
-    width: clamp(150px, 25vw, 380px);
+    width: clamp(220px, 40vw, 550px);
     transform: rotate(-3deg);
     top: 2%;
     left: 2%;
 }
 
+/* Tweak to allow larger right-side images */
+.scatter.pos-right.large-image {
+    width: clamp(220px, 40vw, 550px);
+    transform: rotate(3deg);
+    top: 2%;
+    right: 2%;
+}
+
 @media (min-width: 901px) {
     .has-large-image .text-column {
-        margin-left: clamp(180px, 28vw, 420px);
+        margin-left: clamp(250px, 43vw, 590px);
         margin-right: 20px;
     }
+    
+    .has-large-image-right .text-column {
+        margin-right: clamp(250px, 43vw, 590px);
+        margin-left: 20px;
+    }
+}
+
+/* Utility to crop white letterboxing out of images */
+.crop-letterbox {
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: center;
 }
 
 .service-container {
