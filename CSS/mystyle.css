@@ -153,7 +153,7 @@ p {
 }
 
 .peach-block {
-  background-color: #fffaf5;
+  background-color: #ffe5cc;
   padding: 40px 20px;
   text-align: center;
   margin: 0 0 20px 0;
@@ -231,6 +231,13 @@ p {
   color: #666;
 }
 
+.pipe-drain-section {
+  background-color: #ffe5cc;
+  padding: 1px 0;
+  /* Prevents margin collapse for inner elements */
+  margin: 40px 0;
+}
+
 .section-title {
   text-align: center;
   margin: 60px 0 30px;
@@ -255,7 +262,7 @@ p {
 }
 
 .pipe-service-container {
-  background-color: #f8f9fa;
+  background-color: white;
   border: 1px solid #e0e0e0;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   border-radius: 10px;
@@ -294,7 +301,7 @@ p {
 }
 
 .member-container {
-  background-color: #fffaf5;
+  background-color: #ffe5cc;
   border: 1px solid #e0e0e0;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   border-radius: 10px;
