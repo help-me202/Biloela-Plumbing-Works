@@ -1,0 +1,213 @@
+body {
+    margin: 0;
+    font-family: 'Frank Ruhl Libre', serif;
+    background-color: #f8f9fa;
+}
+
+.top-header {
+    background-color: white;
+    color: black;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 15px;
+    font-weight: bold;
+}
+
+.top-header a {
+    color: black;
+    text-decoration: none;
+    transition: color 0.3s;
+    font-size: 0.9rem;
+}
+
+.top-header a:hover {
+    color: #ffb4a2;
+}
+
+.top-header img {
+    max-height: 50px;
+    width: auto;
+    object-fit: contain;
+    margin-right: auto;
+}
+
+.header-banner {
+    background-color: white;
+    padding: 40px 20px;
+    text-align: center;
+    color: #333;
+}
+
+.header-banner h1 {
+    margin: 0;
+    font-size: 2.5rem;
+    display: inline-block;
+    padding-bottom: 5px;
+    position: relative;
+}
+
+.header-banner h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 50%;
+    /* Adjust this percentage to make the line shorter or longer */
+    height: 3px;
+    background-color: #dd22a8;
+}
+
+.services-main {
+    max-width: 1000px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.service-footer {
+    margin-top: 40px;
+    text-align: center;
+    font-style: italic;
+    color: #666;
+}
+
+.partner-grid-wrapper {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Partnering Services Grid */
+.partner-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 40px 20px;
+    list-style: none;
+    padding: 0;
+    margin: 0 auto;
+}
+
+.partner-card {
+    width: calc((100% - 40px) / 3);
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 15px;
+}
+
+.partner-image {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border: 3px solid #dd22a8;
+}
+
+.partner-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.partner-card:hover .partner-image img {
+    transform: scale(1.08);
+}
+
+.partner-card h3 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 1.4rem;
+}
+
+.partner-card p {
+    color: #555;
+    line-height: 1.5;
+    margin: 0 0 15px 0;
+}
+
+.partner-card ul {
+    text-align: left;
+    color: #555;
+    font-size: 0.9rem;
+    margin: 0 0 15px 0;
+    padding-left: 20px;
+    line-height: 1.4;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.partner-card .list-intro {
+    margin: 0 0 5px 0;
+    width: 100%;
+    text-align: left;
+    flex-grow: 0;
+}
+
+.partner-card .split-list-container {
+    display: flex;
+    gap: 40px;
+    width: 100%;
+    margin-bottom: 15px;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.partner-card .split-list-column {
+    text-align: left;
+}
+
+.partner-card .split-list-column .list-intro {
+    white-space: nowrap;
+}
+
+.partner-card .split-list-container ul {
+    margin: 0;
+}
+
+.partner-card .split-list-left ul {
+    width: fit-content;
+    flex-shrink: 0;
+}
+
+.learn-more {
+    color: #dd22a8;
+    text-decoration: none;
+    font-weight: 700;
+    transition: color 0.3s;
+}
+
+.learn-more:hover {
+    color: #c01b91;
+}
+
+/* Stacks into a single column on mobile */
+@media (max-width: 768px) {
+    .partner-grid {
+        gap: 30px;
+    }
+
+    .partner-card {
+        width: 100%;
+    }
+}
+
+.site-footer {
+    text-align: center;
+    padding: 20px;
+    color: #666;
+    margin-top: 40px;
+    border-top: 1px solid #e0e0e0;
+}
+
+.site-footer p {
+    margin: 0;
+}

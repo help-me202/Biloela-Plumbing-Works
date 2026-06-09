@@ -41,7 +41,7 @@ body {
 .header-banner h1 {
     margin: 0 0 10px 0;
     font-size: 2.5rem;
-    border-bottom: 3px solid navy;
+    border-bottom: 3px solid #dd22a8;
     display: inline-block;
     padding-bottom: 5px;
 }
@@ -73,7 +73,7 @@ body {
 }
 
 .partner h1 {
-    border-bottom: 3px solid hotpink;
+    border-bottom: 3px solid #dd22a8;
     /* Pink underline */
     display: block;
     width: fit-content;
