@@ -105,7 +105,7 @@ h1::after {
     border: 3px solid #dd22a8;
 }
 
-/* Example positions around the central text column */
+/* Positions around the central text column */
 .scatter.pos-left {
     left: 4%;
     top: 0%;
@@ -127,14 +127,6 @@ h1::after {
     transform: rotate(8deg) scale(1.02);
 }
 
-/* Specific tweaks for the tank image (first left image): move up and make slightly smaller */
-.scatter.pos-left.tank-image {
-    left: 6%;
-    top: -5%;
-    width: clamp(90px, 13vw, 220px);
-    transform: rotate(-6deg) scale(1.02) translateX(4px);
-}
-
 .scatter.bottom-right {
     right: 2%;
     bottom: 0%;
@@ -152,23 +144,19 @@ h1::after {
     margin: 0 clamp(120px, 18vw, 260px);
 }
 
-/* Specific tweak for the emergency page to make room for the larger image */
-@media (min-width: 901px) {
-    .emergency-page .text-column {
-        margin-left: clamp(160px, 24vw, 360px);
-        margin-right: 20px;
-    }
+/* Tweak to allow larger left-side images */
+.scatter.pos-left.large-image {
+    width: clamp(150px, 25vw, 380px);
+    transform: rotate(-3deg);
+    top: 2%;
+    left: 2%;
 }
 
-.pump-out {
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 220px;
-    border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    transform: rotate(8deg);
-    z-index: 1;
+@media (min-width: 901px) {
+    .has-large-image .text-column {
+        margin-left: clamp(180px, 28vw, 420px);
+        margin-right: 20px;
+    }
 }
 
 .service-container {
