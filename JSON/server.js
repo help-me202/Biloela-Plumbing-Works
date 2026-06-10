@@ -507,12 +507,12 @@ app.use((err, req, res, next) => {
   const status = err.status || 500;
   // Log to the VS Code terminal so you know exactly where the error is
   console.error(`[Server Error] Status: ${status} | Message: ${err.message}`);
-  if (err.stack) console.error(err.stack);
+  if (err.stack && status !== 404) console.error(err.stack);
 
   res.status(status).json({
     error: err.message,
     status: status,
-    stack: err.stack, // Sends the file/line details back to the browser for debugging
+    stack: status === 404 ? undefined : err.stack,
   });
 });
 
