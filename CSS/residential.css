@@ -20,17 +20,14 @@ body {
     z-index: 1000;
 }
 
-.top-header span {
-    color: black;
-}
-
 .top-header a {
     color: black;
-    text-decoration: underline;
+    text-decoration: none;
+    transition: color 0.3s ease;
 }
 
 .top-header a:hover {
-    text-decoration: underline;
+    color: #ffb4a2;
 }
 
 .top-header img {

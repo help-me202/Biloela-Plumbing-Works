@@ -24,17 +24,14 @@ body {
   z-index: 1000;
 }
 
-.top-header span {
-  color: black;
-}
-
 .top-header a {
   color: black;
-  text-decoration: underline;
+  text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 .top-header a:hover {
-  text-decoration: underline;
+  color: #ffb4a2;
 }
 
 .top-header img {
@@ -45,7 +42,7 @@ body {
 }
 
 .header-banner {
-  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../images/truck.jpg');
+  background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../Images/truck.jpg');
   background-size: cover;
   background-position: center;
   padding: 100px 20px;
