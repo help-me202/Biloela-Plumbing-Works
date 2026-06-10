@@ -82,10 +82,8 @@ app.post(
 );
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "..", "HTML")));
 app.use(express.static(path.join(__dirname, "..")));
-app.get("/", (req, res) => {
-  res.redirect("/HTML/index.html");
-});
 
 const zones = [
   { id: 1, name: "Biloela", postcodes: ["4715"], deliveryFee: 12.0 },
