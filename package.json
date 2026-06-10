@@ -1,7 +1,7 @@
 {
   "scripts": {
     "start": "node JSON/server.js",
-    "dev": "node server.js"
+    "dev": "node JSON/server.js"
   },
   "engines": {
     "node": ">=18"
