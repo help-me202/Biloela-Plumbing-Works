@@ -1,8 +1,13 @@
 {
+  "scripts": {
+    "start": "node JSON/server.js"
+  },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.69.1",
     "@googlemaps/google-maps-services-js": "^3.4.2",
+    "cors": "^2.8.5",
     "dotenv": "^17.4.2",
+    "express": "^4.19.2",
     "nodemailer": "^8.0.9",
     "stripe": "^22.2.0"
   }
