@@ -1,6 +1,10 @@
 {
   "scripts": {
-    "start": "node JSON/server.js"
+    "start": "node JSON/server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.69.1",
@@ -10,5 +14,9 @@
     "express": "^4.19.2",
     "nodemailer": "^8.0.9",
     "stripe": "^22.2.0"
-  }
+  },
+  "name": "biloela-waste-recycling-backend",
+  "version": "1.0.0",
+  "description": "Minimal Node.js backend for pricing and stock lookup",
+  "main": "server.js"
 }
