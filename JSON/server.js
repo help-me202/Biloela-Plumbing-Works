@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const multer = require("multer");
 const app = express();
 const path = require("path");
 // Tell dotenv to look for the .env file in the parent directory
@@ -10,6 +11,11 @@ const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 const port = process.env.PORT || 3000;
 
 app.use(cors());
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
 
 const googleMapsClient = new Client({});
 
@@ -415,6 +421,41 @@ app.post("/api/contact", async (req, res) => {
   } catch (err) {
     console.error("Failed to send contact enquiry email:", err);
     res.status(500).json({ error: "Failed to send email. Please try again." });
+  }
+});
+
+app.post("/api/employment", upload.single("resume"), async (req, res) => {
+  const { name, phone, email } = req.body;
+
+  if (!name || !phone || !email) {
+    return res.status(400).json({ error: "Please fill out all fields." });
+  }
+
+  try {
+    const mailOptions = {
+      from:
+        process.env.EMAIL_USER ||
+        '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
+      to: "training@biloelaplumbingworks.com, peter.kurtz@biloelaplumbingworks.com",
+      subject: `New Employment Application - ${name}`,
+      text: `A new employment application has been submitted via the website.\n\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\n\nPlease find the resume attached if provided.`,
+      attachments: [],
+    };
+
+    if (req.file) {
+      mailOptions.attachments.push({
+        filename: req.file.originalname,
+        content: req.file.buffer,
+      });
+    }
+
+    await transporter.sendMail(mailOptions);
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Failed to send employment application email:", err);
+    res
+      .status(500)
+      .json({ error: "Failed to send your application. Please try again." });
   }
 });
 

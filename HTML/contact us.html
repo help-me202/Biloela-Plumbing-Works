@@ -24,7 +24,7 @@
   </head>
   <body>
     <header class="top-header">
-      <img src="../images/logo.png" alt="Biloela Plumbing Works Logo" />
+      <img src="../Images/logo.png" alt="Biloela Plumbing Works Logo" />
       <a href="index.html" style="font-size: 0.9rem"><span>Home</span></a>
       <a href="partners.html" style="font-size: 0.9rem"
         ><span>Our Partner Companies</span></a
@@ -50,54 +50,97 @@
       <p>Please get in touch with us for any inquiries</p>
     </div>
 
-    <div class="enquiry-section">
-      <h2>Send us an Enquiry</h2>
-      <form id="contact-form" class="enquiry-form">
-        <div class="form-inputs">
-          <div class="form-group">
-            <input type="text" id="enq-name" placeholder="Name" required />
-          </div>
-          <div class="form-group">
-            <input type="tel" id="enq-phone" placeholder="Phone" required />
-          </div>
-          <div class="form-group">
-            <input
-              type="email"
-              id="enq-email"
-              placeholder="Email Address"
-              required
-            />
-          </div>
-          <button type="submit">Contact Us</button>
-        </div>
-        <div id="enquiry-message"></div>
-      </form>
-    </div>
-
     <div class="contact-page-content">
-      <div class="contact-container">
-        <p>
-          <strong>Address:</strong><br />5 Dunn Street, Biloela QLD, Australia
-        </p>
-        <p>
-          <strong>Phone:</strong><br />
-          Office: (07) 4992 6782<br />
-          After Hours: 0429 931 915
-        </p>
-        <p><strong>Email:</strong><br />jobs@biloelaplumbingworks.com</p>
-        <p>
-          <strong>Hours:</strong><br />Mon-Fri - 09:00-17:00<br />Sat -
-          08:00-12:00
-        </p>
-      </div>
-      <div class="map-container">
-        <iframe
-          src="https://maps.google.com/maps?q=5%20Dunn%20Street,%20Biloela%20QLD,%20Australia&t=&z=15&ie=UTF8&iwloc=&output=embed"
-          allowfullscreen=""
-          loading="lazy"
-          referrerpolicy="no-referrer-when-downgrade"
-        >
-        </iframe>
+      <div class="contact-left-col">
+        <div class="enquiry-section">
+          <h2>Send us an Enquiry</h2>
+          <form id="contact-form" class="enquiry-form">
+            <div class="form-inputs">
+              <div class="form-group">
+                <input type="text" id="enq-name" placeholder="Name" required />
+              </div>
+              <div class="form-group">
+                <input type="tel" id="enq-phone" placeholder="Phone" required />
+              </div>
+              <div class="form-group">
+                <input
+                  type="email"
+                  id="enq-email"
+                  placeholder="Email Address"
+                  required
+                />
+              </div>
+              <button type="submit">Contact Us</button>
+            </div>
+            <div id="enquiry-message"></div>
+          </form>
+        </div>
+
+        <div class="employment-section enquiry-section">
+          <h2>Employment Opportunities</h2>
+          <form
+            id="employment-form"
+            class="enquiry-form"
+            enctype="multipart/form-data"
+          >
+            <div class="form-inputs">
+              <div class="form-group">
+                <input type="text" id="emp-name" placeholder="Name" required />
+              </div>
+              <div class="form-group">
+                <input type="tel" id="emp-phone" placeholder="Phone" required />
+              </div>
+              <div class="form-group">
+                <input
+                  type="email"
+                  id="emp-email"
+                  placeholder="Email Address"
+                  required
+                />
+              </div>
+              <div class="form-group resume-upload">
+                <label for="emp-resume">Attach Resume</label>
+                <input
+                  type="file"
+                  id="emp-resume"
+                  name="resume"
+                  accept=".pdf,.doc,.docx"
+                  required
+                />
+              </div>
+            </div>
+            <button type="submit">Submit Application</button>
+            <div id="employment-message"></div>
+          </form>
+        </div>
+
+        <div class="contact-details-row">
+          <div class="contact-container">
+            <p>
+              <strong>Address:</strong><br />5 Dunn Street, Biloela QLD,
+              Australia
+            </p>
+            <p>
+              <strong>Phone:</strong><br />
+              Office: (07) 4992 6782<br />
+              After Hours: 0429 931 915
+            </p>
+            <p><strong>Email:</strong><br />jobs@biloelaplumbingworks.com</p>
+            <p>
+              <strong>Hours:</strong><br />Mon-Fri - 09:00-17:00<br />Sat -
+              08:00-12:00
+            </p>
+          </div>
+          <div class="map-container">
+            <iframe
+              src="https://maps.google.com/maps?q=5%20Dunn%20Street,%20Biloela%20QLD,%20Australia&t=&z=15&ie=UTF8&iwloc=&output=embed"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+            >
+            </iframe>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -154,6 +197,46 @@
             .then((data) => {
               if (data.error) throw new Error(data.error);
               msg.textContent = "Thank you! Your enquiry has been sent.";
+              msg.style.color = "#0b6623";
+              this.reset();
+            })
+            .catch((err) => {
+              msg.textContent =
+                err.message || "An error occurred. Please try again.";
+              msg.style.color = "#b91c1c";
+            })
+            .finally(() => (btn.disabled = false));
+        });
+
+      document
+        .getElementById("employment-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const btn = this.querySelector("button");
+          const msg = document.getElementById("employment-message");
+          const formData = new FormData();
+
+          formData.append("name", document.getElementById("emp-name").value);
+          formData.append("phone", document.getElementById("emp-phone").value);
+          formData.append("email", document.getElementById("emp-email").value);
+          const resumeInput = document.getElementById("emp-resume");
+          if (resumeInput.files.length > 0) {
+            formData.append("resume", resumeInput.files[0]);
+          }
+
+          btn.disabled = true;
+          msg.textContent = "Sending...";
+          msg.style.color = "#333";
+
+          fetch("/api/employment", {
+            method: "POST",
+            body: formData,
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (data.error) throw new Error(data.error);
+              msg.textContent =
+                "Thank you! Your application has been submitted.";
               msg.style.color = "#0b6623";
               this.reset();
             })
