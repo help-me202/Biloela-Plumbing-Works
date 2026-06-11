@@ -78,6 +78,11 @@
 
         <div class="employment-section enquiry-section">
           <h2>Employment Opportunities</h2>
+          <h5>
+            For employment opportunities, please feel free to send us your
+            details and we'll get back to you with what we have available. Thank
+            you
+          </h5>
           <form
             id="employment-form"
             class="enquiry-form"
@@ -98,17 +103,34 @@
                   required
                 />
               </div>
-              <div class="form-group resume-upload">
-                <label for="emp-resume">Attach Resume</label>
-                <input
-                  type="file"
-                  id="emp-resume"
-                  name="resume"
-                  accept=".pdf,.doc,.docx"
-                  required
-                />
+            </div>
+
+            <div class="attachments-content">
+              <div class="form-inputs">
+                <div class="form-group resume-upload">
+                  <label for="emp-resume"
+                    >Resume <span class="required">*</span></label
+                  >
+                  <input
+                    type="file"
+                    id="emp-resume"
+                    name="resume"
+                    accept=".pdf,.doc,.docx"
+                    required
+                  />
+                </div>
+                <div class="form-group resume-upload">
+                  <label for="emp-cover-letter">Cover Letter (Optional)</label>
+                  <input
+                    type="file"
+                    id="emp-cover-letter"
+                    name="coverLetter"
+                    accept=".pdf,.doc,.docx"
+                  />
+                </div>
               </div>
             </div>
+
             <button type="submit">Submit Application</button>
             <div id="employment-message"></div>
           </form>
@@ -219,9 +241,18 @@
           formData.append("name", document.getElementById("emp-name").value);
           formData.append("phone", document.getElementById("emp-phone").value);
           formData.append("email", document.getElementById("emp-email").value);
+
           const resumeInput = document.getElementById("emp-resume");
-          if (resumeInput.files.length > 0) {
-            formData.append("resume", resumeInput.files[0]);
+          if (!resumeInput.files.length) {
+            msg.textContent = "Please attach your resume.";
+            msg.style.color = "#b91c1c";
+            return;
+          }
+          formData.append("resume", resumeInput.files[0]);
+
+          const coverLetterInput = document.getElementById("emp-cover-letter");
+          if (coverLetterInput.files.length > 0) {
+            formData.append("coverLetter", coverLetterInput.files[0]);
           }
 
           btn.disabled = true;
@@ -238,7 +269,11 @@
               msg.textContent =
                 "Thank you! Your application has been submitted.";
               msg.style.color = "#0b6623";
-              this.reset();
+              document.getElementById("emp-name").value = "";
+              document.getElementById("emp-phone").value = "";
+              document.getElementById("emp-email").value = "";
+              resumeInput.value = "";
+              coverLetterInput.value = "";
             })
             .catch((err) => {
               msg.textContent =

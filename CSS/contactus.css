@@ -242,6 +242,27 @@ h1::after {
   margin-bottom: 20px;
 }
 
+.employment-section {
+  background-color: #fffaf5;
+}
+
+.employment-section h5 {
+  margin: 0 0 20px 0;
+  color: #666;
+  font-size: 16px;
+  font-weight: 400;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.attachments-content {
+  margin: 25px 0 25px 0;
+  padding: 20px;
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
 .enquiry-form {
   display: flex;
   flex-direction: column;
@@ -269,6 +290,36 @@ h1::after {
   border-radius: 6px;
   font-size: 16px;
   font-family: inherit;
+}
+
+.resume-upload {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.resume-upload label {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.resume-upload input[type="file"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background-color: white;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.resume-upload input[type="file"]:hover {
+  background-color: #f8f9fa;
+}
+
+.required {
+  color: #b91c1c;
+  font-weight: bold;
 }
 
 .enquiry-form button {

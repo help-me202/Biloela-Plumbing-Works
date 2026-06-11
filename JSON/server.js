@@ -424,40 +424,55 @@ app.post("/api/contact", async (req, res) => {
   }
 });
 
-app.post("/api/employment", upload.single("resume"), async (req, res) => {
-  const { name, phone, email } = req.body;
+app.post(
+  "/api/employment",
+  upload.fields([{ name: "resume" }, { name: "coverLetter" }]),
+  async (req, res) => {
+    const { name, phone, email } = req.body;
 
-  if (!name || !phone || !email) {
-    return res.status(400).json({ error: "Please fill out all fields." });
-  }
-
-  try {
-    const mailOptions = {
-      from:
-        process.env.EMAIL_USER ||
-        '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
-      to: "training@biloelaplumbingworks.com, peter.kurtz@biloelaplumbingworks.com",
-      subject: `New Employment Application - ${name}`,
-      text: `A new employment application has been submitted via the website.\n\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\n\nPlease find the resume attached if provided.`,
-      attachments: [],
-    };
-
-    if (req.file) {
-      mailOptions.attachments.push({
-        filename: req.file.originalname,
-        content: req.file.buffer,
-      });
+    if (!name || !phone || !email) {
+      return res.status(400).json({ error: "Please fill out all fields." });
     }
 
-    await transporter.sendMail(mailOptions);
-    res.json({ success: true });
-  } catch (err) {
-    console.error("Failed to send employment application email:", err);
-    res
-      .status(500)
-      .json({ error: "Failed to send your application. Please try again." });
-  }
-});
+    if (!req.files || !req.files.resume) {
+      return res.status(400).json({ error: "Resume is required." });
+    }
+
+    try {
+      const mailOptions = {
+        from:
+          process.env.EMAIL_USER ||
+          '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
+        to: "training@biloelaplumbingworks.com, peter.kurtz@biloelaplumbingworks.com",
+        subject: `New Employment Application - ${name}`,
+        text: `A new employment application has been submitted via the website.\n\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\n\nPlease find the resume and cover letter (if provided) attached.`,
+        attachments: [],
+      };
+
+      if (req.files.resume) {
+        mailOptions.attachments.push({
+          filename: req.files.resume[0].originalname,
+          content: req.files.resume[0].buffer,
+        });
+      }
+
+      if (req.files.coverLetter && req.files.coverLetter[0]) {
+        mailOptions.attachments.push({
+          filename: req.files.coverLetter[0].originalname,
+          content: req.files.coverLetter[0].buffer,
+        });
+      }
+
+      await transporter.sendMail(mailOptions);
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Failed to send employment application email:", err);
+      res
+        .status(500)
+        .json({ error: "Failed to send your application. Please try again." });
+    }
+  },
+);
 
 app.post("/api/create-checkout-session", async (req, res) => {
   const { name, email, amount } = req.body;
