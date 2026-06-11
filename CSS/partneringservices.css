@@ -11,8 +11,12 @@ body {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 15px;
+    gap: 25px;
     font-weight: bold;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+    max-height: 100vh;
+    overflow-y: auto;
 }
 
 .top-header a {
@@ -31,6 +35,51 @@ body {
     width: auto;
     object-fit: contain;
     margin-right: auto;
+}
+
+/* Hamburger Menu Base Styles */
+.menu-toggle {
+    display: none;
+}
+
+.hamburger {
+    display: none;
+    font-size: 28px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+@media (max-width: 1150px) {
+    .top-header {
+        justify-content: flex-end;
+        padding: 10px 20px;
+        gap: 15px;
+    }
+    .top-header img {
+        margin-right: auto;
+    }
+    .top-header a.persistent-link {
+        font-size: 0.85rem !important;
+    }
+    .hamburger {
+        display: block;
+    }
+    .nav-links {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        padding-top: 15px;
+        gap: 15px;
+    }
+    .menu-toggle:checked ~ .nav-links {
+        display: flex;
+    }
 }
 
 .header-banner {

@@ -3,6 +3,9 @@ body {
     font-family: 'Frank Ruhl Libre', serif;
     margin: 0;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
 .top-header {
@@ -12,12 +15,16 @@ body {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 25px;
     font-size: 18px;
     font-weight: bold;
     position: sticky;
     top: 0;
     z-index: 1000;
+    flex-wrap: wrap;
+    gap: 25px;
+    box-sizing: border-box;
+    max-height: 100vh;
+    overflow-y: auto;
 }
 
 .top-header a {
@@ -36,6 +43,51 @@ body {
     object-fit: contain;
     /* Ensures the image fits perfectly without stretching */
     margin-right: auto;
+}
+
+/* Hamburger Menu Base Styles */
+.menu-toggle {
+    display: none;
+}
+
+.hamburger {
+    display: none;
+    font-size: 28px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.nav-links {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+@media (max-width: 1150px) {
+    .top-header {
+        justify-content: flex-end;
+        padding: 10px 20px;
+        gap: 15px;
+    }
+    .top-header img {
+        margin-right: auto;
+    }
+    .top-header a.persistent-link {
+        font-size: 0.85rem !important;
+    }
+    .hamburger {
+        display: block;
+    }
+    .nav-links {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        padding-top: 15px;
+        gap: 15px;
+    }
+    .menu-toggle:checked ~ .nav-links {
+        display: flex;
+    }
 }
 
 .header-banner {
@@ -213,7 +265,7 @@ h1::after {
     text-align: center;
     padding: 20px;
     color: #666;
-    margin-top: 40px;
+    margin-top: auto;
     border-top: 1px solid #e0e0e0;
     background-color: white;
 }
