@@ -21,8 +21,8 @@ body {
   position: sticky;
   top: 0;
   z-index: 1000;
-  flex-wrap: wrap;
-  gap: 25px;
+  flex-wrap: nowrap;
+  gap: 15px;
   box-sizing: border-box;
   max-height: 100vh;
   overflow-y: auto;
@@ -33,6 +33,7 @@ body {
   text-decoration: none;
   transition: color 0.3s ease;
   font-size: 0.9rem;
+  white-space: nowrap;
 }
 
 .top-header a:hover {
@@ -60,12 +61,26 @@ body {
 
 .nav-links {
   display: flex;
-  gap: 25px;
+  gap: 15px;
   align-items: center;
 }
 
-@media (max-width: 1150px) {
+@media (max-width: 1100px) {
+  .top-header a {
+    font-size: 0.8rem;
+  }
   .top-header {
+    gap: 10px;
+    padding: 10px 15px;
+  }
+  .nav-links {
+    gap: 10px;
+  }
+}
+
+@media (max-width: 900px) {
+  .top-header {
+    flex-wrap: wrap;
     justify-content: flex-end;
     padding: 10px 20px;
     gap: 15px;
@@ -306,7 +321,7 @@ p {
 
 .blocks-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: 30px;
   max-width: 1200px;
   margin: 0 auto 60px;
@@ -428,7 +443,7 @@ p {
 /* Smaller Members and Testimonials */
 .smaller-members {
   max-width: 900px;
-  margin: 0 auto;
+  margin: 0 auto 60px;
 }
 
 .smaller-members .member-image-wrapper {
