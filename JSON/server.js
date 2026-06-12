@@ -547,6 +547,11 @@ app.get("/api/distance", async (req, res, next) => {
   }
 });
 
+// Redirect legacy/missing waste page to the external Biloela Waste & Recycling site
+app.get("/biloela-waste-and-recycling.html", (req, res) => {
+  res.redirect(301, "https://bw-recycling.com/");
+});
+
 // 404 Handler: Catch requests for pages/APIs that don't exist
 app.use((req, res, next) => {
   const err = new Error(
