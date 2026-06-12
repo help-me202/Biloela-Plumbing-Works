@@ -15,6 +15,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const submitBtn = document.getElementById("submit-btn");
   const form = document.querySelector("form.form");
 
+  if (dateEl) {
+    const today = new Date().toISOString().split("T")[0];
+    dateEl.setAttribute("min", today);
+  }
+
   let availableStock = null;
 
   const orderResult = document.getElementById("order-result");
@@ -68,7 +73,10 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
 
-      if (weight < 18) {
+      const addressContainer = document.getElementById("address-container");
+      const addressInput = document.getElementById("address");
+
+      if (weight > 0 && weight < 18) {
         if (fulfillmentSelect.value === "delivery") {
           alert(
             "Gas bottles under 18kg are in store pick up only, please select in store.",
@@ -78,9 +86,14 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         deliveryOption.disabled = true;
         deliveryOption.style.display = "none";
+        if (addressContainer) addressContainer.style.display = "none";
+        if (addressInput) addressInput.required = false;
+        updateOrderResult("", "info");
       } else {
         deliveryOption.disabled = false;
         deliveryOption.style.display = "block";
+        if (addressContainer) addressContainer.style.display = "block";
+        if (addressInput) addressInput.required = true;
       }
     }
 
