@@ -147,13 +147,50 @@ h1 {
 
 .form {
   margin-bottom: 15px;
-  background-color: #f8f9fa;
+  background-color: #ffe5b4; /* Light peach */
   border: 1px solid #e0e0e0;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   border-radius: 10px;
-  padding: 20px;
+  padding: 30px;
   width: 60%;
   margin: 20px auto;
+  font-size: 1.2rem;
+  box-sizing: border-box;
+  text-align: justify;
+}
+
+.form label {
+  font-weight: 500;
+}
+
+.form input:not([type="submit"]),
+.form select {
+  width: 100%;
+  box-sizing: border-box;
+  font-size: 1.1rem;
+  padding: 10px;
+  margin-top: 5px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.form input[type="submit"] {
+  font-size: 1.2rem;
+  padding: 12px 20px;
+  margin-top: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+  background-color: #dd22a8;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.form input[type="submit"]:hover {
+  background-color: #c01d93;
 }
 
 @media (max-width: 900px) {
