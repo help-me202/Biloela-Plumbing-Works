@@ -114,10 +114,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Only update price if collection is 'delivery' and address is empty, we still send the request,
     // but the backend might return an error if it can't calculate distance without an address.
+    const backendCollection = collection === "pickup" ? "store" : collection;
     const params = new URLSearchParams({
       size,
       date,
-      collection,
+      collection: backendCollection,
       address,
     });
     fetch(`${apiBase}/api/price?${params}`)
@@ -159,9 +160,11 @@ document.addEventListener("DOMContentLoaded", () => {
             " Please reduce quantity or choose another option.";
           stockSummary.style.color = "#b91c1c";
           submitBtn.disabled = true;
+          submitBtn.style.display = "none";
         } else {
           stockSummary.style.color = "#111";
           submitBtn.disabled = collection === "delivery";
+          submitBtn.style.display = "block";
         }
 
         const payLink = deliveryPayment.querySelector("a");
@@ -181,6 +184,7 @@ document.addEventListener("DOMContentLoaded", () => {
         calculatedPrice.value = "";
         availableStock = null;
         submitBtn.disabled = collection === "delivery";
+        submitBtn.style.display = "block";
 
         // Show an error message if the address is missing for delivery
         if (collection === "delivery" && !address) {
