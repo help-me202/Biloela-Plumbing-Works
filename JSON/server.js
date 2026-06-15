@@ -6,7 +6,6 @@ const path = require("path");
 // Tell dotenv to look for the .env file in the parent directory
 require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 const { Client } = require("@googlemaps/google-maps-services-js");
-const nodemailer = require("nodemailer");
 const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 const port = process.env.PORT || 3000;
 
@@ -18,28 +17,6 @@ const upload = multer({
 });
 
 const googleMapsClient = new Client({});
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: process.env.SMTP_PORT || 587,
-  secure: process.env.SMTP_SECURE === "true", // true for port 465, false for other ports
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-// Verify email connection on server startup
-transporter.verify((error, success) => {
-  if (error) {
-    console.error(
-      "⚠️ SMTP Connection Error: Cannot send emails. Check your .env file credentials.",
-      error,
-    );
-  } else {
-    console.log("✉️  SMTP Server is ready to send messages");
-  }
-});
 
 // Stripe Webhook - MUST be placed before express.json()
 app.post(
@@ -68,19 +45,9 @@ app.post(
       const name = session.customer_details?.name;
       const amount = session.amount_total / 100;
 
-      try {
-        await transporter.sendMail({
-          from:
-            process.env.EMAIL_USER ||
-            '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
-          to: "workshop@biloelaplumbingworks.com, service@biloelaplumbingworks.com, admin@biloelaplumbingworks.com",
-          subject: `New Payment Received - ${name || "Customer"}`,
-          text: `A payment has been successfully processed via Stripe Checkout.\n\nName: ${name || "N/A"}\nEmail: ${email || "N/A"}\nAmount Paid: AUD ${amount.toFixed(2)}`,
-        });
-        console.log("✅ Webhook payment email sent!");
-      } catch (err) {
-        console.error("Failed to send payment notification email:", err);
-      }
+      console.log(
+        `✅ Webhook payment processed for ${name || "Customer"}. Amount: AUD ${amount.toFixed(2)}`,
+      );
     }
 
     res.send(); // Acknowledge receipt of the event
@@ -362,19 +329,7 @@ app.post("/api/reserve", async (req, res) => {
   );
   if (record) record.qty = record.qty - quantity;
 
-  // Send notification email for the reservation
-  try {
-    await transporter.sendMail({
-      from:
-        process.env.EMAIL_USER ||
-        '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
-      to: "workshop@biloelaplumbingworks.com, service@biloelaplumbingworks.com, admin@biloelaplumbingworks.com",
-      subject: `New Gas Request - ${name || "Customer"}`,
-      text: `A new gas request has been submitted.\n\nName: ${name || "N/A"}\nEmail: ${email || "N/A"}\nPhone: ${contact || "N/A"}\nSize: ${size}\nQuantity: ${quantity}put \nDate: ${date}\nFulfillment: ${collection || "store"}\nAddress: ${address || "N/A"}`,
-    });
-  } catch (err) {
-    console.error("Failed to send reservation email:", err);
-  }
+  console.log(`✅ New Gas Request processed for ${name || "Customer"}.`);
 
   res.json({
     success: true,
@@ -386,18 +341,13 @@ app.post("/api/reserve", async (req, res) => {
 app.post("/api/notify-payment", async (req, res) => {
   const { name, email, amount } = req.body;
   try {
-    await transporter.sendMail({
-      from:
-        process.env.EMAIL_USER ||
-        '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
-      to: "workshop@biloelaplumbingworks.com, service@biloelaplumbingworks.com, admin@biloelaplumbingworks.com",
-      subject: `New Payment Received - ${name || "Customer"}`,
-      text: `A payment has been successfully processed.\n\nName: ${name || "N/A"}\nEmail: ${email || "N/A"}\nAmount Paid: AUD ${amount}`,
-    });
+    console.log(
+      `✅ Payment notification received for ${name || "Customer"}. Amount: AUD ${amount}`,
+    );
     res.json({ success: true });
   } catch (err) {
-    console.error("Failed to send payment notification email:", err);
-    res.status(500).json({ error: "Failed to send email" });
+    console.error("Failed to process payment notification:", err);
+    res.status(500).json({ error: "Failed to process request" });
   }
 });
 
@@ -409,18 +359,13 @@ app.post("/api/contact", async (req, res) => {
   }
 
   try {
-    await transporter.sendMail({
-      from:
-        process.env.EMAIL_USER ||
-        '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
-      to: "jobs@biloelaplumbingworks.com",
-      subject: `New Contact Enquiry - ${name}`,
-      text: `You have received a new contact enquiry via the website.\n\nName: ${name}\nPhone: ${phone}\nEmail: ${email}`,
-    });
+    console.log(`✅ New Contact Enquiry received from ${name}.`);
     res.json({ success: true });
   } catch (err) {
-    console.error("Failed to send contact enquiry email:", err);
-    res.status(500).json({ error: "Failed to send email. Please try again." });
+    console.error("Failed to process contact enquiry:", err);
+    res
+      .status(500)
+      .json({ error: "Failed to process request. Please try again." });
   }
 });
 
@@ -439,34 +384,10 @@ app.post(
     }
 
     try {
-      const mailOptions = {
-        from:
-          process.env.EMAIL_USER ||
-          '"Biloela Plumbing Works" <noreply@biloelaplumbingworks.com>',
-        to: "training@biloelaplumbingworks.com, peter.kurtz@biloelaplumbingworks.com",
-        subject: `New Employment Application - ${name}`,
-        text: `A new employment application has been submitted via the website.\n\nName: ${name}\nPhone: ${phone}\nEmail: ${email}\n\nPlease find the resume and cover letter (if provided) attached.`,
-        attachments: [],
-      };
-
-      if (req.files.resume) {
-        mailOptions.attachments.push({
-          filename: req.files.resume[0].originalname,
-          content: req.files.resume[0].buffer,
-        });
-      }
-
-      if (req.files.coverLetter && req.files.coverLetter[0]) {
-        mailOptions.attachments.push({
-          filename: req.files.coverLetter[0].originalname,
-          content: req.files.coverLetter[0].buffer,
-        });
-      }
-
-      await transporter.sendMail(mailOptions);
+      console.log(`✅ New Employment Application received from ${name}.`);
       res.json({ success: true });
     } catch (err) {
-      console.error("Failed to send employment application email:", err);
+      console.error("Failed to process employment application:", err);
       res
         .status(500)
         .json({ error: "Failed to send your application. Please try again." });
