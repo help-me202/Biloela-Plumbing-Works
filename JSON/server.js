@@ -10,7 +10,6 @@ require("dotenv").config({
 });
 
 const { Client } = require("@googlemaps/google-maps-services-js");
-const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const nodemailer = require("nodemailer");
@@ -49,60 +48,6 @@ const upload = multer({
 });
 
 const googleMapsClient = new Client({});
-
-// Stripe Webhook - MUST be placed before express.json()
-app.post(
-  "/api/webhook",
-  express.raw({
-    type: "application/json",
-  }),
-  async (req, res) => {
-    const sig = req.headers["stripe-signature"];
-
-    let event;
-
-    try {
-      // Verify that this event actually came from Stripe
-      event = stripe.webhooks.constructEvent(
-        req.body,
-        sig,
-        process.env.STRIPE_WEBHOOK_SECRET,
-      );
-    } catch (err) {
-      console.error(`⚠️ Webhook Signature Error: $ {
-          err.message
-        }
-
-        `);
-
-      return res.status(400).send(`Webhook Error: $ {
-          err.message
-        }
-
-        `);
-    }
-
-    // Handle successful payment
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object;
-      const email = session.customer_details?.email;
-      const name = session.customer_details?.name;
-      const amount = session.amount_total / 100;
-
-      console.log(`✅ Webhook payment processed for $ {
-          name || "Customer"
-        }
-
-        . Amount: AUD $ {
-          amount.toFixed(2)
-        }
-
-        `);
-    }
-
-    res.send(); // Acknowledge receipt of the event
-  },
-);
 
 app.use(
   express.json({
@@ -775,58 +720,54 @@ app.post(
   },
 );
 
-app.post("/api/create-checkout-session", async (req, res) => {
+app.post("/api/create-commbank-payment", async (req, res) => {
   const { name, email, amount } = req.body;
+  const parsedAmount = Number(amount);
 
-  try {
-    // Dynamically get the current domain (works for localhost and live)
-    const domainURL = req.headers.origin || `http: //${req.headers.host}`;
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card", "au_becs_debit"], // Supports cards & Australian bank accounts
-
-      customer_email: email,
-      line_items: [
-        {
-          price_data: {
-            currency: "aud",
-            product_data: {
-              name: "Biloela Plumbing Works - Gas Order",
-            },
-
-            unit_amount: Math.round(parseFloat(amount) * 100), // Stripe requires amounts in cents
-          },
-
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: `$ {
-            domainURL
-          }
-
-          /HTML/Gas%20request.html?paid=true`,
-      cancel_url: `$ {
-            domainURL
-          }
-
-          /HTML/payment.html?amount=$ {
-            amount
-          }
-
-          `,
-    });
-
-    res.json({
-      url: session.url,
-    });
-  } catch (err) {
-    console.error("Stripe error:", err);
-
-    res.status(500).json({
-      error: err.message,
+  if (!name || !email || !Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+    return res.status(400).json({
+      error: "name, email and a valid amount are required",
     });
   }
+
+  const domainURL = req.headers.origin || `http://${req.headers.host}`;
+  const formattedAmount = parsedAmount.toFixed(2);
+  const returnUrl =
+    process.env.COMMBANK_RETURN_URL ||
+    `${domainURL}/HTML/Gas%20request.html?paid=true`;
+  const cancelUrl =
+    process.env.COMMBANK_CANCEL_URL ||
+    `${domainURL}/HTML/payment.html?amount=${encodeURIComponent(formattedAmount)}`;
+
+  // If CommBank Hosted Payment URL is configured, redirect users there.
+  if (process.env.COMMBANK_PAYMENT_URL) {
+    const reference = `GAS-${Date.now()}`;
+    const params = new URLSearchParams({
+      amount: formattedAmount,
+      currency: "AUD",
+      reference,
+      customerName: name,
+      customerEmail: email,
+      returnUrl,
+      cancelUrl,
+    });
+
+    if (process.env.COMMBANK_MERCHANT_ID) {
+      params.set("merchantId", process.env.COMMBANK_MERCHANT_ID);
+    }
+
+    const commbankUrl = `${process.env.COMMBANK_PAYMENT_URL}?${params.toString()}`;
+
+    return res.json({
+      provider: "commbank",
+      url: commbankUrl,
+      reference,
+    });
+  }
+
+  return res.status(500).json({
+    error: "CommBank payment gateway is not configured on the server",
+  });
 });
 
 app.get("/api/distance", async (req, res, next) => {

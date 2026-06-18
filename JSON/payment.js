@@ -32,9 +32,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // simulate processing
     const payBtn = document.getElementById("pay-btn");
     payBtn.disabled = true;
-    setMessage("Redirecting to secure payment gateway...", false);
+    setMessage("Redirecting to secure CommBank payment gateway...", false);
 
-    fetch("/api/create-checkout-session", {
+    fetch("/api/create-commbank-payment", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, amount }),
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .then((res) => res.json())
       .then((data) => {
         if (data.error) throw new Error(data.error);
-        window.location.href = data.url; // Redirect to Stripe
+        window.location.href = data.url; // Redirect to CommBank payment gateway
       })
       .catch((err) => {
         console.error("Payment init error:", err);

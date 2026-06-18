@@ -244,7 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const payLink = deliveryPayment.querySelector("a");
         if (payLink) {
-          payLink.href = `payment.html?amount=${totalPrice.toFixed(2)}`;
+          payLink.href = `payment.html?provider=commbank&source=gas-request&amount=${encodeURIComponent(totalPrice.toFixed(2))}`;
         }
       })
       .catch((error) => {
