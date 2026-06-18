@@ -38,6 +38,101 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const PAYMENT_NOTIFICATION_EMAIL =
+  process.env.PAYMENT_NOTIFICATION_EMAIL || "workshop@biloelaplumbingworks.com";
+
+function pickFirstValue(payload, keys) {
+  for (const key of keys) {
+    const value = payload?.[key];
+    if (value !== undefined && value !== null && String(value).trim() !== "") {
+      return String(value);
+    }
+  }
+  return "";
+}
+
+function normalizePaymentStatus(rawStatus) {
+  const status = String(rawStatus || "unknown").toLowerCase();
+
+  if (
+    status === "00" ||
+    status === "0" ||
+    status.includes("success") ||
+    status.includes("approved") ||
+    status.includes("paid") ||
+    status === "true"
+  ) {
+    return "paid";
+  }
+
+  if (
+    status.includes("cancel") ||
+    status.includes("declin") ||
+    status.includes("fail") ||
+    status.includes("error") ||
+    status === "false"
+  ) {
+    return "failed";
+  }
+
+  return "pending";
+}
+
+function getCommbankPaymentDetails(payload) {
+  const reference = pickFirstValue(payload, [
+    "reference",
+    "merchantReference",
+    "orderId",
+    "transactionId",
+    "txnRef",
+  ]);
+  const amount = pickFirstValue(payload, ["amount", "totalAmount"]);
+  const customerName = pickFirstValue(payload, ["customerName", "name"]);
+  const customerEmail = pickFirstValue(payload, ["customerEmail", "email"]);
+  const statusRaw = pickFirstValue(payload, [
+    "status",
+    "result",
+    "paymentStatus",
+    "responseCode",
+    "txnResponseCode",
+    "approved",
+  ]);
+  const status = normalizePaymentStatus(statusRaw);
+
+  return {
+    reference,
+    amount,
+    customerName,
+    customerEmail,
+    status,
+    statusRaw,
+  };
+}
+
+async function sendPaymentNotificationEmail(eventType, details, payload) {
+  if (!process.env.SMTP_USER) return;
+
+  const amountText = details.amount
+    ? `AUD ${details.amount}`
+    : "Not supplied by gateway";
+
+  await transporter.sendMail({
+    from: `"Biloela Plumbing Works"<${process.env.SMTP_USER}>`,
+    replyTo: details.customerEmail || process.env.SMTP_USER,
+    to: PAYMENT_NOTIFICATION_EMAIL,
+    subject: `CommBank Payment ${eventType}: ${details.status.toUpperCase()}`,
+    text:
+      `Event: ${eventType}\n` +
+      `Status: ${details.status}\n` +
+      `Gateway status/raw code: ${details.statusRaw || "N/A"}\n` +
+      `Reference: ${details.reference || "N/A"}\n` +
+      `Amount: ${amountText}\n` +
+      `Customer name: ${details.customerName || "N/A"}\n` +
+      `Customer email: ${details.customerEmail || "N/A"}\n\n` +
+      `Gateway payload:\n${JSON.stringify(payload || {}, null, 2)}\n`,
+  });
+}
+
 app.use(cors());
 
 const upload = multer({
@@ -530,31 +625,18 @@ app.post("/api/notify-payment", async (req, res) => {
   const { name, email, amount } = req.body;
 
   try {
-    if (process.env.SMTP_USER) {
-      await transporter.sendMail({
-        from: `"${name || "Customer"}"<$ {
-              process.env.SMTP_USER
-            }
-
-            >`,
-        replyTo: email,
-        to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
-        subject: "New Payment Notification",
-        text: `Name: $ {
-              name || "N/A"
-            }
-
-            \nEmail: $ {
-              email || "N/A"
-            }
-
-            \nAmount: AUD $ {
-              amount
-            }
-
-            `,
-      });
-    }
+    await sendPaymentNotificationEmail(
+      "Manual Notification",
+      {
+        reference: "",
+        amount: amount ? String(amount) : "",
+        customerName: name || "",
+        customerEmail: email || "",
+        status: "pending",
+        statusRaw: "manual-notify",
+      },
+      req.body,
+    );
 
     console.log(`✅ Payment notification received for $ {
           name || "Customer"
@@ -733,11 +815,10 @@ app.post("/api/create-commbank-payment", async (req, res) => {
   const domainURL = req.headers.origin || `http://${req.headers.host}`;
   const formattedAmount = parsedAmount.toFixed(2);
   const returnUrl =
-    process.env.COMMBANK_RETURN_URL ||
-    `${domainURL}/HTML/Gas%20request.html?paid=true`;
+    process.env.COMMBANK_RETURN_URL || `${domainURL}/api/commbank/return`;
   const cancelUrl =
     process.env.COMMBANK_CANCEL_URL ||
-    `${domainURL}/HTML/payment.html?amount=${encodeURIComponent(formattedAmount)}`;
+    `${domainURL}/api/commbank/cancel?amount=${encodeURIComponent(formattedAmount)}`;
 
   // If CommBank Hosted Payment URL is configured, redirect users there.
   if (process.env.COMMBANK_PAYMENT_URL) {
@@ -756,6 +837,26 @@ app.post("/api/create-commbank-payment", async (req, res) => {
       params.set("merchantId", process.env.COMMBANK_MERCHANT_ID);
     }
 
+    const details = {
+      reference,
+      amount: formattedAmount,
+      customerName: name,
+      customerEmail: email,
+      status: "pending",
+      statusRaw: "payment-created",
+    };
+
+    try {
+      await sendPaymentNotificationEmail("Created", details, {
+        reference,
+        amount: formattedAmount,
+        customerName: name,
+        customerEmail: email,
+      });
+    } catch (notifyErr) {
+      console.error("Failed to send payment creation notification:", notifyErr);
+    }
+
     const commbankUrl = `${process.env.COMMBANK_PAYMENT_URL}?${params.toString()}`;
 
     return res.json({
@@ -768,6 +869,58 @@ app.post("/api/create-commbank-payment", async (req, res) => {
   return res.status(500).json({
     error: "CommBank payment gateway is not configured on the server",
   });
+});
+
+async function processCommbankCallback(req, res, eventType) {
+  const payload = req.method === "GET" ? req.query : req.body;
+  const details = getCommbankPaymentDetails(payload);
+
+  try {
+    await sendPaymentNotificationEmail(eventType, details, payload);
+  } catch (err) {
+    console.error(`Failed to send ${eventType} payment notification:`, err);
+  }
+
+  if (eventType === "Webhook") {
+    return res.json({
+      success: true,
+      received: true,
+      status: details.status,
+      reference: details.reference || null,
+    });
+  }
+
+  const paid = details.status === "paid" ? "true" : "false";
+  const redirect =
+    `${req.protocol}://${req.get("host")}/HTML/Gas%20request.html` +
+    `?paid=${paid}&reference=${encodeURIComponent(details.reference || "")}`;
+
+  return res.redirect(redirect);
+}
+
+app.get("/api/commbank/return", async (req, res) => {
+  return processCommbankCallback(req, res, "Return Callback");
+});
+
+app.post("/api/commbank/webhook", async (req, res) => {
+  return processCommbankCallback(req, res, "Webhook");
+});
+
+app.get("/api/commbank/cancel", async (req, res) => {
+  const payload = req.query;
+  const details = getCommbankPaymentDetails(payload);
+  details.status = "failed";
+  details.statusRaw = details.statusRaw || "cancelled";
+
+  try {
+    await sendPaymentNotificationEmail("Cancelled", details, payload);
+  } catch (err) {
+    console.error("Failed to send cancelled payment notification:", err);
+  }
+
+  const amount = encodeURIComponent(details.amount || "");
+  const redirect = `${req.protocol}://${req.get("host")}/HTML/payment.html?amount=${amount}`;
+  return res.redirect(redirect);
 });
 
 app.get("/api/distance", async (req, res, next) => {

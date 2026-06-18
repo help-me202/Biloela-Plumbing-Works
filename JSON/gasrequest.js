@@ -62,11 +62,23 @@ document.addEventListener("DOMContentLoaded", () => {
     orderResult.className = `order-result ${type}`;
   }
 
-  // Check if we came back from a successful payment
+  // Check if we came back from payment callback
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get("paid") === "true") {
-    updateOrderResult("Paid request has been sent", "success");
-    // Clear the URL parameter so it doesn't persist on refresh
+  const paidParam = urlParams.get("paid");
+  const paymentReference = urlParams.get("reference");
+
+  if (paidParam === "true") {
+    updateOrderResult(
+      `Paid request has been sent${paymentReference ? ` (Ref: ${paymentReference})` : ""}`,
+      "success",
+    );
+    // Clear URL parameters so they don't persist on refresh
+    window.history.replaceState({}, document.title, window.location.pathname);
+  } else if (paidParam === "false") {
+    updateOrderResult(
+      `Payment was not successful${paymentReference ? ` (Ref: ${paymentReference})` : ""}. Please try again.`,
+      "error",
+    );
     window.history.replaceState({}, document.title, window.location.pathname);
   }
 
