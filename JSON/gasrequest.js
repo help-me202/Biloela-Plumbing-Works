@@ -19,12 +19,29 @@ document.addEventListener("DOMContentLoaded", () => {
     const today = new Date().toISOString().split("T")[0];
     dateEl.setAttribute("min", today);
 
-    // Open calendar picker when clicking anywhere inside the input box
-    dateEl.addEventListener("click", function () {
+    // Allow opening only from the calendar icon area; block text-field selection clicks.
+    dateEl.addEventListener("mousedown", function (e) {
+      const rect = this.getBoundingClientRect();
+      const clickX = e.clientX - rect.left;
+      const clickedCalendarArea = clickX >= 8 && clickX <= 44;
+
+      e.preventDefault();
+
+      if (!clickedCalendarArea) {
+        this.blur();
+        return;
+      }
+
       if (typeof this.showPicker === "function") {
         try {
           this.showPicker();
-        } catch (e) {} // Prevent crash if picker is already open
+        } catch (e) {
+          // Fallback for browsers that require focus before opening picker.
+          this.focus();
+          try {
+            this.showPicker();
+          } catch (_) {}
+        }
       }
     });
 
@@ -137,6 +154,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const size = getSelectedSize();
     const sizeWeight = parseFloat(size);
     const isUnder18Kg = Number.isFinite(sizeWeight) && sizeWeight < 18;
+    const inStorePickupMessage =
+      "This bottle size is available for in-store pickup. Please pay and collect in store.";
     let date = dateEl.value;
 
     // Prevent weekend selection
@@ -180,9 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
           const body = await response.json().catch(() => ({}));
           throw new Error(
             body.error ||
-              (isUnder18Kg
-                ? "Please pay and collect instore"
-                : "Unable to fetch pricing"),
+              (isUnder18Kg ? inStorePickupMessage : "Unable to fetch pricing"),
           );
         }
         return response.json();
@@ -255,6 +272,8 @@ document.addEventListener("DOMContentLoaded", () => {
           error.message === "Product not found"
         ) {
           updateOrderResult("", "info");
+        } else if (error.message === inStorePickupMessage) {
+          updateOrderResult(error.message, "notice");
         } else {
           updateOrderResult(error.message, "error");
         }

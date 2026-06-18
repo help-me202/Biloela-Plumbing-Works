@@ -167,6 +167,7 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  width: 100%;
 }
 
 .date-field-group label {
@@ -174,8 +175,7 @@ h1 {
 }
 
 .date-field-group input[type="date"] {
-  width: 340px;
-  max-width: 100%;
+  width: 100%;
   margin: 0;
   position: relative;
   text-align: left;
@@ -193,6 +193,9 @@ h1 {
 
 .date-field-group input[type="date"]::-webkit-datetime-edit {
   padding-left: 6px;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
 }
 
 .form input:not([type="submit"]),
@@ -208,14 +211,14 @@ h1 {
 }
 
 .form .date-field-group input[type="date"] {
-  width: 340px;
-  max-width: 100%;
-  padding: 10px 10px 10px 34px;
+  width: 100%;
+  padding: 10px 10px 10px 30px;
 }
 
 .form .date-field-group input[type="date"]::-webkit-datetime-edit,
 .form .date-field-group input[type="date"]::-webkit-datetime-edit-fields-wrapper {
   padding-left: 6px;
+  pointer-events: none;
 }
 
 .form input[type="submit"] {
@@ -283,6 +286,12 @@ h1 {
 .order-result.success {
   border-color: #0b6623;
   color: #0b6623;
+}
+
+.order-result.notice {
+  background-color: #fff0f7;
+  border-color: #dd22a8;
+  color: #a31574;
 }
 
 .site-footer {
