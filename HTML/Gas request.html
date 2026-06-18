@@ -84,7 +84,7 @@
       <input type="date" id="date" name="date" required /><br /><br />
 
       <label for="size">Size:</label><br />
-      <select id="size" name="Size" required onchange="checkFulfillmentLogic()">
+      <select id="size" name="Size" required>
         <option value="">Choose size</option>
         <!-- Added data-weight to track the numerical value -->
         <option value="3.7kg" data-weight="3.7">3.7kg</option>
@@ -116,12 +116,7 @@
       /><br /><br />
 
       <label for="fulfillment">Fulfillment Method:</label><br />
-      <select
-        id="fulfillment"
-        name="Fulfillment"
-        required
-        onchange="checkFulfillmentLogic()"
-      >
+      <select id="fulfillment" name="Fulfillment" required>
         <option value="">Choose method</option>
         <option value="pickup">In-Store Pick Up</option>
         <option value="delivery" id="deliveryOption">Delivery</option>

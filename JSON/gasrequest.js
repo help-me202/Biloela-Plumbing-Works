@@ -18,6 +18,22 @@ document.addEventListener("DOMContentLoaded", () => {
   if (dateEl) {
     const today = new Date().toISOString().split("T")[0];
     dateEl.setAttribute("min", today);
+
+    // Open calendar picker when clicking anywhere inside the input box
+    dateEl.addEventListener("click", function () {
+      if (typeof this.showPicker === "function") {
+        try {
+          this.showPicker();
+        } catch (e) {} // Prevent crash if picker is already open
+      }
+    });
+
+    // Remove focus (highlight) from the input after a date is selected
+    dateEl.addEventListener("change", function () {
+      setTimeout(() => {
+        this.blur();
+      }, 50); // Slight delay ensures it overrides the browser's default refocus
+    });
   }
 
   let availableStock = null;
@@ -45,6 +61,25 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateDeliveryMessage() {
     deliveryPayment.style.display =
       collectionEl.value === "delivery" ? "block" : "none";
+  }
+
+  function getSelectedSize() {
+    let size = sizeEl.value;
+    const typeContainer = document.getElementById("type-container");
+    // If the gas type dropdown is visible and the base size is 18kg
+    if (
+      typeContainer &&
+      typeContainer.style.display === "block" &&
+      size === "18kg"
+    ) {
+      const gasTypeEl = document.getElementById("gas-type");
+      if (gasTypeEl && gasTypeEl.value) {
+        const typeStr =
+          gasTypeEl.value.charAt(0).toUpperCase() + gasTypeEl.value.slice(1);
+        size = `${size} ${typeStr}`; // e.g. converts "18kg" to "18kg Exchange"
+      }
+    }
+    return size;
   }
 
   function updatePriceInfo() {
@@ -99,13 +134,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
     checkFulfillmentLogic();
 
-    const size = sizeEl.value;
-    const date = dateEl.value;
+    const size = getSelectedSize();
+    let date = dateEl.value;
+
+    // Prevent weekend selection
+    if (date) {
+      const day = new Date(date).getUTCDay(); // 0 is Sunday, 6 is Saturday
+      if (day === 0 || day === 6) {
+        updateOrderResult(
+          "We are closed on weekends. Please select a weekday.",
+          "error",
+        );
+        dateEl.value = ""; // Clear the invalid date
+        date = ""; // Treat as empty to halt further processing
+      }
+    }
+
     const quantity = Number(quantityEl.value) || 0;
     const collection = collectionEl.value;
     const address = addressEl ? addressEl.value.trim() : "";
 
-    if (!size || !date) {
+    if (!size || !date || !collection) {
       priceInfo.style.display = "none";
       calculatedPrice.value = "";
       availableStock = null;
@@ -115,11 +164,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Only update price if collection is 'delivery' and address is empty, we still send the request,
     // but the backend might return an error if it can't calculate distance without an address.
     const backendCollection = collection === "pickup" ? "store" : collection;
+    // Prevent sending an address for distance calculation unless delivery is actually selected
+    const addressToSend = collection === "delivery" ? address : "";
     const params = new URLSearchParams({
       size,
       date,
       collection: backendCollection,
-      address,
+      address: addressToSend,
     });
     fetch(`${apiBase}/api/price?${params}`)
       .then(async (response) => {
@@ -210,6 +261,10 @@ document.addEventListener("DOMContentLoaded", () => {
     addressEl.addEventListener("change", updatePriceInfo);
     addressEl.addEventListener("blur", updatePriceInfo);
   }
+  const gasTypeEl = document.getElementById("gas-type");
+  if (gasTypeEl) {
+    gasTypeEl.addEventListener("change", updatePriceInfo);
+  }
 
   collectionEl.addEventListener("change", () => {
     updateDeliveryMessage();
@@ -241,7 +296,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    const size = sizeEl.value;
+    const size = getSelectedSize();
     const date = dateEl.value;
     const collection = collectionEl.value;
     const address = addressEl ? addressEl.value.trim() : "";

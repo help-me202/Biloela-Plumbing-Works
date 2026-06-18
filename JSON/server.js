@@ -7,7 +7,33 @@ const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 const { Client } = require("@googlemaps/google-maps-services-js");
 const stripe = require("stripe")(process.env.STRIPE_API_KEY);
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
+const nodemailer = require("nodemailer");
 const port = process.env.PORT || 3000;
+
+// Security precautions
+app.use(helmet());
+
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: "Too many requests from this IP, please try again after 15 minutes",
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.use('/api/', apiLimiter);
+
+// SMTP configuration
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: process.env.SMTP_PORT || 587,
+  secure: process.env.SMTP_SECURE === "true",
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
 app.use(cors());
 
@@ -54,7 +80,7 @@ app.post(
   },
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "1mb" }));
 app.use(express.static(path.join(__dirname, "..", "HTML")));
 app.use(express.static(path.join(__dirname, "..")));
 
@@ -192,23 +218,47 @@ async function getDistance(address) {
     throw new Error("Google Maps API key is not configured on the server.");
   if (!address) throw new Error("Address is required to calculate distance.");
 
-  const response = await googleMapsClient.distancematrix({
-    params: {
-      origins: ["5 Dunn St, Biloela QLD 4715, Australia"],
-      destinations: [address],
-      key: apiKey,
-    },
-    timeout: 2000,
-  });
+  // Append state and country to help Google accurately find local addresses
+  const searchAddress = address.toLowerCase().includes("australia")
+    ? address
+    : `${address}, QLD, Australia`;
+
+  let response;
+  try {
+    response = await googleMapsClient.distancematrix({
+      params: {
+        origins: ["5 Dunn St, Biloela QLD 4715, Australia"],
+        destinations: [searchAddress],
+        key: apiKey,
+        region: "au", // Biases the search to Australian addresses
+      },
+      timeout: 5000, // Increased timeout to prevent premature drops
+    });
+  } catch (error) {
+    console.error(
+      "Google Maps Client Exception:",
+      error.response?.data || error.message,
+    );
+    throw new Error("Failed to reach Google Maps API.");
+  }
+
+  // Safely handle top-level Google API errors (like REQUEST_DENIED for invalid keys)
+  if (response.data.status !== "OK") {
+    console.error(
+      `Google API Top-Level Error: ${response.data.status} | Details: ${response.data.error_message || "None"}`,
+    );
+    throw new Error(`Google Maps API Error: ${response.data.status}`);
+  }
 
   const result = response.data.rows[0].elements[0];
   if (result.status === "OK") {
     const distanceInMeters = result.distance.value;
     return parseFloat((distanceInMeters / 1000).toFixed(1));
   } else {
-    throw new Error(
-      `Could not calculate distance for that address. Status: ${result.status}`,
+    console.error(
+      `Google Maps Distance Matrix failed. Status: ${result.status} for address: ${searchAddress}`,
     );
+    throw new Error(`Could not calculate distance. Status: ${result.status}`);
   }
 }
 
@@ -252,7 +302,8 @@ app.get("/api/price", async (req, res, next) => {
           // Let's fallback to 0 for now so they still get a price, or you can throw.
           // Throwing is safer for correct pricing.
           return res.status(400).json({
-            error: "Could not calculate distance for delivery to that address.",
+            error:
+              "Could not calculate distance. Please ensure you entered a valid delivery address.",
           });
         }
       }
@@ -329,6 +380,20 @@ app.post("/api/reserve", async (req, res) => {
   );
   if (record) record.qty = record.qty - quantity;
 
+  try {
+    if (process.env.SMTP_USER) {
+      await transporter.sendMail({
+        from: `"${name || "Customer"}" <${process.env.SMTP_USER}>`,
+        replyTo: email,
+        to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
+        subject: "New Gas Reservation",
+        text: `Name: ${name || "N/A"}\nEmail: ${email || "N/A"}\nContact: ${contact || "N/A"}\nSize: ${size}\nQuantity: ${quantity}\nDate: ${date}\nCollection: ${collection}\nAddress: ${address || "N/A"}`,
+      });
+    }
+  } catch (err) {
+    console.error("Failed to send reservation email:", err);
+  }
+
   console.log(`✅ New Gas Request processed for ${name || "Customer"}.`);
 
   res.json({
@@ -341,6 +406,15 @@ app.post("/api/reserve", async (req, res) => {
 app.post("/api/notify-payment", async (req, res) => {
   const { name, email, amount } = req.body;
   try {
+    if (process.env.SMTP_USER) {
+      await transporter.sendMail({
+        from: `"${name || "Customer"}" <${process.env.SMTP_USER}>`,
+        replyTo: email,
+        to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
+        subject: "New Payment Notification",
+        text: `Name: ${name || "N/A"}\nEmail: ${email || "N/A"}\nAmount: AUD ${amount}`,
+      });
+    }
     console.log(
       `✅ Payment notification received for ${name || "Customer"}. Amount: AUD ${amount}`,
     );
@@ -359,6 +433,15 @@ app.post("/api/contact", async (req, res) => {
   }
 
   try {
+    if (process.env.SMTP_USER) {
+      await transporter.sendMail({
+        from: `"${name}" <${process.env.SMTP_USER}>`,
+        replyTo: email,
+        to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
+        subject: "New Contact Enquiry",
+        text: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}`,
+      });
+    }
     console.log(`✅ New Contact Enquiry received from ${name}.`);
     res.json({ success: true });
   } catch (err) {
@@ -384,6 +467,31 @@ app.post(
     }
 
     try {
+      if (process.env.SMTP_USER) {
+        const attachments = [];
+        if (req.files.resume && req.files.resume[0]) {
+          attachments.push({
+            filename: req.files.resume[0].originalname,
+            content: req.files.resume[0].buffer,
+          });
+        }
+        if (req.files.coverLetter && req.files.coverLetter[0]) {
+          attachments.push({
+            filename: req.files.coverLetter[0].originalname,
+            content: req.files.coverLetter[0].buffer,
+          });
+        }
+
+        await transporter.sendMail({
+          from: `"${name}" <${process.env.SMTP_USER}>`,
+          replyTo: email,
+          to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
+          subject: "New Employment Application",
+          text: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}`,
+          attachments,
+        });
+      }
+
       console.log(`✅ New Employment Application received from ${name}.`);
       res.json({ success: true });
     } catch (err) {
@@ -442,14 +550,35 @@ app.get("/api/distance", async (req, res, next) => {
   }
 
   try {
-    const response = await googleMapsClient.distancematrix({
-      params: {
-        origins: ["5 Dunn St, Biloela QLD 4715, Australia"],
-        destinations: [address],
-        key: apiKey,
-      },
-      timeout: 2000, // milliseconds
-    });
+    const searchAddress = address.toLowerCase().includes("australia")
+      ? address
+      : `${address}, QLD, Australia`;
+
+    let response;
+    try {
+      response = await googleMapsClient.distancematrix({
+        params: {
+          origins: ["5 Dunn St, Biloela QLD 4715, Australia"],
+          destinations: [searchAddress],
+          key: apiKey,
+          region: "au",
+        },
+        timeout: 5000,
+      });
+    } catch (apiErr) {
+      console.error(
+        "Google API request failed:",
+        apiErr.response?.data || apiErr.message,
+      );
+      throw new Error("Failed to reach Google Maps API.");
+    }
+
+    if (response.data.status !== "OK") {
+      console.error(
+        `Google API Top-Level Error: ${response.data.status} | Details: ${response.data.error_message || "None"}`,
+      );
+      throw new Error(`Google Maps API Error: ${response.data.status}`);
+    }
 
     const result = response.data.rows[0].elements[0];
 
@@ -458,9 +587,10 @@ app.get("/api/distance", async (req, res, next) => {
       const distanceInKm = (distanceInMeters / 1000).toFixed(1);
       res.json({ distance: parseFloat(distanceInKm) });
     } else {
-      throw new Error(
-        `Could not calculate distance for that address. Status: ${result.status}`,
+      console.error(
+        `Distance Matrix API failed. Status: ${result.status} for address: ${searchAddress}`,
       );
+      throw new Error(`Could not calculate distance. Status: ${result.status}`);
     }
   } catch (error) {
     error.message = `Google Maps API Error: ${error.message}`;
