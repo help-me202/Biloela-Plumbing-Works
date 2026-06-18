@@ -1,4 +1,4 @@
-<!doctype html>
+< !doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -16,6 +16,7 @@
         flex-direction: column;
         min-height: 100vh;
       }
+
       .site-footer {
         margin-top: auto;
       }
@@ -24,32 +25,31 @@
   </head>
   <body>
     <header class="top-header">
-      <img src="../Images/logo.png" alt="Biloela Plumbing Works Logo" />
-      <a href="index.html" class="persistent-link" style="font-size: 0.9rem"
+      <img src="../Images/logo.png" alt="Biloela Plumbing Works Logo" /><a
+        href="index.html"
+        class="persistent-link"
+        style="font-size: 0.9rem"
         ><span>Home</span></a
-      >
-      <a
+      ><a
         href="contact us.html"
         class="persistent-link"
         style="font-size: 0.9rem"
         ><span>Contact Us</span></a
-      >
-      <input type="checkbox" id="menu-toggle" class="menu-toggle" />
-      <label for="menu-toggle" class="hamburger">&#9776;</label>
+      ><input type="checkbox" id="menu-toggle" class="menu-toggle" /><label
+        for="menu-toggle"
+        class="hamburger"
+        >&#9776;
+      </label>
       <nav class="nav-links">
         <a href="partners.html" style="font-size: 0.9rem"
           ><span>Our Partner Companies</span></a
-        >
-        <a href="partneringservices.html" style="font-size: 0.9rem"
+        ><a href="partneringservices.html" style="font-size: 0.9rem"
           ><span>Partnering Services</span></a
-        >
-        <a href="Plumbingservices.html" style="font-size: 0.9rem"
+        ><a href="Plumbingservices.html" style="font-size: 0.9rem"
           ><span>Plumbing Services</span></a
-        >
-        <a href="LPG-gas-information.html" style="font-size: 0.9rem"
+        ><a href="LPG-gas-information.html" style="font-size: 0.9rem"
           ><span>LPG Gas Services</span></a
-        >
-        <a href="MediaReleases.html" style="font-size: 0.9rem"
+        ><a href="MediaReleases.html" style="font-size: 0.9rem"
           ><span>Media Releases</span></a
         >
       </nav>
@@ -59,8 +59,7 @@
       <p>Please fill out the form below to request a gas collection.</p>
     </div>
     <form class="form" novalidate>
-      <label for="name">Name:</label><br />
-      <input
+      <label for="name">Name:</label><br /><input
         type="text"
         id="name"
         name="name"
@@ -68,75 +67,78 @@
         pattern=".*\s+.*"
         title="Please enter your first and last name"
       /><br /><br />
-
       <div id="address-container">
-        <label for="address">Address:</label><br />
-        <input type="text" id="address" name="address" required /><br /><br />
+        <label for="address">Address:</label><br /><input
+          type="text"
+          id="address"
+          name="address"
+          required
+        /><br /><br />
       </div>
-
-      <label for="contact">Contact Number:</label><br />
-      <input type="tel" id="contact" name="contact" required /><br /><br />
-
-      <label for="email">Email:</label><br />
-      <input type="email" id="email" name="email" /><br /><br />
-
-      <label for="date">Date:</label><br />
-      <input type="date" id="date" name="date" required /><br /><br />
-
-      <label for="size">Size:</label><br />
-      <select id="size" name="Size" required>
+      <label for="contact">Contact Number:</label><br /><input
+        type="tel"
+        id="contact"
+        name="contact"
+        required
+      /><br /><br /><label for="email">Email:</label><br /><input
+        type="email"
+        id="email"
+        name="email"
+      /><br /><br />
+      <div class="date-field-group">
+        <label for="date">Date:</label
+        ><input type="date" id="date" name="date" required />
+      </div>
+      <br /><label for="size">Size:</label><br /><select
+        id="size"
+        name="Size"
+        required
+      >
         <option value="">Choose size</option>
-        <!-- Added data-weight to track the numerical value -->
+        < !-- Added data-weight to track the numerical value -->
         <option value="3.7kg" data-weight="3.7">3.7kg</option>
         <option value="8.5kg" data-weight="8.5">8.5kg</option>
         <option value="13kg" data-weight="13">13kg</option>
         <option value="15kg" data-weight="15">15kg</option>
         <option value="18kg" data-weight="18">18kg</option>
-        <option value="45kg" data-weight="45">45kg</option>
-      </select>
-      <br /><br />
-
+        <option value="45kg" data-weight="45">45kg</option></select
+      ><br /><br />
       <div id="type-container" style="display: none">
-        <label for="gas-type">Type:</label><br />
-        <select id="gas-type" name="Gas Type">
+        <label for="gas-type">Type:</label><br /><select
+          id="gas-type"
+          name="Gas Type"
+        >
           <option value="exchange">Exchange</option>
-          <option value="forklift">Forklift</option>
-        </select>
-        <br /><br />
+          <option value="forklift">Forklift</option></select
+        ><br /><br />
       </div>
-
-      <label for="quantity">Quantity:</label><br />
-      <input
+      <label for="quantity">Quantity:</label><br /><input
         type="number"
         id="quantity"
         name="Quantity"
         min="1"
         value="1"
         required
-      /><br /><br />
-
-      <label for="fulfillment">Fulfillment Method:</label><br />
-      <select id="fulfillment" name="Fulfillment" required>
+      /><br /><br /><label for="fulfillment">Fulfillment Method:</label
+      ><br /><select id="fulfillment" name="Fulfillment" required>
         <option value="">Choose method</option>
         <option value="pickup">In-Store Pick Up</option>
-        <option value="delivery" id="deliveryOption">Delivery</option>
-      </select>
-      <br /><br />
-
-      <input type="submit" id="submit-btn" value="Submit Request" />
-
+        <option value="delivery" id="deliveryOption">Delivery</option></select
+      ><br /><br /><input
+        type="submit"
+        id="submit-btn"
+        value="Submit Request"
+      />
       <div id="price-info" class="price-info" style="display: none">
         <p id="price-summary"></p>
         <p id="delivery-fee"></p>
         <p id="gst-amount"></p>
         <p id="stock-summary"></p>
       </div>
-
       <p id="delivery-payment" class="delivery-payment" style="display: none">
-        If you choose delivery, please
-        <a href="payment.html">pay here</a> for delivery fees.
+        If you choose delivery, please <a href="payment.html">pay here</a>for
+        delivery fees.
       </p>
-
       <input
         type="hidden"
         id="calculatedPrice"

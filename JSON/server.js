@@ -3,8 +3,12 @@ const cors = require("cors");
 const multer = require("multer");
 const app = express();
 const path = require("path");
+
 // Tell dotenv to look for the .env file in the parent directory
-require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
+require("dotenv").config({
+  path: path.join(__dirname, "..", ".env"),
+});
+
 const { Client } = require("@googlemaps/google-maps-services-js");
 const stripe = require("stripe")(process.env.STRIPE_API_KEY);
 const helmet = require("helmet");
@@ -22,7 +26,7 @@ const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-app.use('/api/', apiLimiter);
+app.use("/api/", apiLimiter);
 
 // SMTP configuration
 const transporter = nodemailer.createTransport({
@@ -39,7 +43,9 @@ app.use(cors());
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
 });
 
 const googleMapsClient = new Client({});
@@ -47,11 +53,14 @@ const googleMapsClient = new Client({});
 // Stripe Webhook - MUST be placed before express.json()
 app.post(
   "/api/webhook",
-  express.raw({ type: "application/json" }),
+  express.raw({
+    type: "application/json",
+  }),
   async (req, res) => {
     const sig = req.headers["stripe-signature"];
 
     let event;
+
     try {
       // Verify that this event actually came from Stripe
       event = stripe.webhooks.constructEvent(
@@ -60,8 +69,17 @@ app.post(
         process.env.STRIPE_WEBHOOK_SECRET,
       );
     } catch (err) {
-      console.error(`⚠️ Webhook Signature Error: ${err.message}`);
-      return res.status(400).send(`Webhook Error: ${err.message}`);
+      console.error(`⚠️ Webhook Signature Error: $ {
+          err.message
+        }
+
+        `);
+
+      return res.status(400).send(`Webhook Error: $ {
+          err.message
+        }
+
+        `);
     }
 
     // Handle successful payment
@@ -71,23 +89,48 @@ app.post(
       const name = session.customer_details?.name;
       const amount = session.amount_total / 100;
 
-      console.log(
-        `✅ Webhook payment processed for ${name || "Customer"}. Amount: AUD ${amount.toFixed(2)}`,
-      );
+      console.log(`✅ Webhook payment processed for $ {
+          name || "Customer"
+        }
+
+        . Amount: AUD $ {
+          amount.toFixed(2)
+        }
+
+        `);
     }
 
     res.send(); // Acknowledge receipt of the event
   },
 );
 
-app.use(express.json({ limit: "1mb" }));
+app.use(
+  express.json({
+    limit: "1mb",
+  }),
+);
 app.use(express.static(path.join(__dirname, "..", "HTML")));
 app.use(express.static(path.join(__dirname, "..")));
 
 const zones = [
-  { id: 1, name: "Biloela", postcodes: ["4715"], deliveryFee: 12.0 },
-  { id: 2, name: "Moura", postcodes: ["4718"], deliveryFee: 15.0 },
-  { id: 3, name: "Other", postcodes: [], deliveryFee: 20.0 },
+  {
+    id: 1,
+    name: "Biloela",
+    postcodes: ["4715"],
+    deliveryFee: 12.0,
+  },
+  {
+    id: 2,
+    name: "Moura",
+    postcodes: ["4718"],
+    deliveryFee: 15.0,
+  },
+  {
+    id: 3,
+    name: "Other",
+    postcodes: [],
+    deliveryFee: 20.0,
+  },
 ];
 
 const products = [
@@ -164,18 +207,63 @@ const products = [
 ];
 
 const inventory = [
-  { productId: 1, zoneId: 1, qty: 3 }, // 3.7kg
-  { productId: 2, zoneId: 1, qty: 8 }, // 8.5kg
-  { productId: 4, zoneId: 1, qty: 8 }, // 13kg
-  { productId: 6, zoneId: 1, qty: 8 }, // 15kg
-  { productId: 8, zoneId: 1, qty: 10 }, // 45kg
-  { productId: 9, zoneId: 1, qty: 7 }, // 18kg Forklift
-  { productId: 10, zoneId: 1, qty: 1 }, // 18kg Exchange
+  {
+    productId: 1,
+    zoneId: 1,
+    qty: 3,
+  },
+  // 3.7kg
+  {
+    productId: 2,
+    zoneId: 1,
+    qty: 8,
+  },
+  // 8.5kg
+  {
+    productId: 4,
+    zoneId: 1,
+    qty: 8,
+  },
+  // 13kg
+  {
+    productId: 6,
+    zoneId: 1,
+    qty: 8,
+  },
+  // 15kg
+  {
+    productId: 8,
+    zoneId: 1,
+    qty: 10,
+  },
+  // 45kg
+  {
+    productId: 9,
+    zoneId: 1,
+    qty: 7,
+  },
+  // 18kg Forklift
+  {
+    productId: 10,
+    zoneId: 1,
+    qty: 1,
+  },
+  // 18kg Exchange
 ];
 
 const zonePrices = [
-  { productId: 3, zoneId: 1, overridePrice: 62.0 }, // 9kg
-  { productId: 5, zoneId: 1, overridePrice: 80.0 }, // 14kg
+  {
+    productId: 3,
+    zoneId: 1,
+    overridePrice: 62.0,
+  },
+  // 9kg
+  {
+    productId: 5,
+    zoneId: 1,
+    overridePrice: 80.0,
+  },
+  // 14kg
 ];
 
 function findZone() {
@@ -221,9 +309,16 @@ async function getDistance(address) {
   // Append state and country to help Google accurately find local addresses
   const searchAddress = address.toLowerCase().includes("australia")
     ? address
-    : `${address}, QLD, Australia`;
+    : `$ {
+    address
+  }
+
+  ,
+  QLD,
+  Australia`;
 
   let response;
+
   try {
     response = await googleMapsClient.distancematrix({
       params: {
@@ -232,6 +327,7 @@ async function getDistance(address) {
         key: apiKey,
         region: "au", // Biases the search to Australian addresses
       },
+
       timeout: 5000, // Increased timeout to prevent premature drops
     });
   } catch (error) {
@@ -244,34 +340,63 @@ async function getDistance(address) {
 
   // Safely handle top-level Google API errors (like REQUEST_DENIED for invalid keys)
   if (response.data.status !== "OK") {
-    console.error(
-      `Google API Top-Level Error: ${response.data.status} | Details: ${response.data.error_message || "None"}`,
-    );
-    throw new Error(`Google Maps API Error: ${response.data.status}`);
+    console.error(`Google API Top-Level Error: $ {
+        response.data.status
+      }
+
+      | Details: $ {
+        response.data.error_message || "None"
+      }
+
+      `);
+
+    throw new Error(`Google Maps API Error: $ {
+        response.data.status
+      }
+
+      `);
   }
 
   const result = response.data.rows[0].elements[0];
+
   if (result.status === "OK") {
     const distanceInMeters = result.distance.value;
     return parseFloat((distanceInMeters / 1000).toFixed(1));
   } else {
-    console.error(
-      `Google Maps Distance Matrix failed. Status: ${result.status} for address: ${searchAddress}`,
-    );
-    throw new Error(`Could not calculate distance. Status: ${result.status}`);
+    console.error(`Google Maps Distance Matrix failed. Status: $ {
+        result.status
+      }
+
+      for address: $ {
+        searchAddress
+      }
+
+      `);
+
+    throw new Error(`Could not calculate distance. Status: $ {
+        result.status
+      }
+
+      `);
   }
 }
 
 app.get("/api/price", async (req, res, next) => {
   try {
     const { size, date, collection, address } = req.query;
+
     if (!size) {
-      return res.status(400).json({ error: "Missing size query parameter" });
+      return res.status(400).json({
+        error: "Missing size query parameter",
+      });
     }
 
     const product = getProduct(size);
+
     if (!product) {
-      return res.status(404).json({ error: "Product size not found" });
+      return res.status(404).json({
+        error: "Product size not found",
+      });
     }
 
     const zone = findZone();
@@ -298,6 +423,7 @@ app.get("/api/price", async (req, res, next) => {
           distanceVal = await getDistance(address);
         } catch (err) {
           console.error("Distance error in /api/price:", err.message);
+
           // If we fail to get distance, we might fallback to 0 or throw.
           // Let's fallback to 0 for now so they still get a price, or you can throw.
           // Throwing is safer for correct pricing.
@@ -320,6 +446,7 @@ app.get("/api/price", async (req, res, next) => {
             deliveryFee = 240.0 - basePrice; // $264 inc gst -> $240 ex gst
           }
         }
+
         deliveryFee = Math.max(0, deliveryFee);
       } else if (
         product.size === "18kg" ||
@@ -341,7 +468,12 @@ app.get("/api/price", async (req, res, next) => {
 
     res.json({
       product,
-      zone: { id: zone.id, name: zone.name, deliveryFee: deliveryFee },
+      zone: {
+        id: zone.id,
+        name: zone.name,
+        deliveryFee: deliveryFee,
+      },
+
       collection: collectionType,
       basePrice,
       deliveryFee: deliveryFee,
@@ -357,22 +489,28 @@ app.get("/api/price", async (req, res, next) => {
 app.post("/api/reserve", async (req, res) => {
   const { name, email, contact, size, date, quantity, collection, address } =
     req.body;
+
   if (!size || !date || !quantity) {
-    return res
-      .status(400)
-      .json({ error: "size, date and quantity are required" });
+    return res.status(400).json({
+      error: "size, date and quantity are required",
+    });
   }
 
   const product = getProduct(size);
+
   if (!product)
-    return res.status(404).json({ error: "Product size not found" });
+    return res.status(404).json({
+      error: "Product size not found",
+    });
 
   const zone = findZone();
   const stock = getInventory(product.id, zone.id);
+
   if (quantity > stock) {
-    return res
-      .status(409)
-      .json({ error: "Insufficient stock", available: stock });
+    return res.status(409).json({
+      error: "Insufficient stock",
+      available: stock,
+    });
   }
 
   const record = inventory.find(
@@ -383,18 +521,58 @@ app.post("/api/reserve", async (req, res) => {
   try {
     if (process.env.SMTP_USER) {
       await transporter.sendMail({
-        from: `"${name || "Customer"}" <${process.env.SMTP_USER}>`,
+        from: `"${name || "Customer"}"<$ {
+              process.env.SMTP_USER
+            }
+
+            >`,
         replyTo: email,
         to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
         subject: "New Gas Reservation",
-        text: `Name: ${name || "N/A"}\nEmail: ${email || "N/A"}\nContact: ${contact || "N/A"}\nSize: ${size}\nQuantity: ${quantity}\nDate: ${date}\nCollection: ${collection}\nAddress: ${address || "N/A"}`,
+        text: `Name: $ {
+              name || "N/A"
+            }
+
+            \nEmail: $ {
+              email || "N/A"
+            }
+
+            \nContact: $ {
+              contact || "N/A"
+            }
+
+            \nSize: $ {
+              size
+            }
+
+            \nQuantity: $ {
+              quantity
+            }
+
+            \nDate: $ {
+              date
+            }
+
+            \nCollection: $ {
+              collection
+            }
+
+            \nAddress: $ {
+              address || "N/A"
+            }
+
+            `,
       });
     }
   } catch (err) {
     console.error("Failed to send reservation email:", err);
   }
 
-  console.log(`✅ New Gas Request processed for ${name || "Customer"}.`);
+  console.log(`✅ New Gas Request processed for $ {
+        name || "Customer"
+      }
+
+      .`);
 
   res.json({
     success: true,
@@ -405,23 +583,53 @@ app.post("/api/reserve", async (req, res) => {
 
 app.post("/api/notify-payment", async (req, res) => {
   const { name, email, amount } = req.body;
+
   try {
     if (process.env.SMTP_USER) {
       await transporter.sendMail({
-        from: `"${name || "Customer"}" <${process.env.SMTP_USER}>`,
+        from: `"${name || "Customer"}"<$ {
+              process.env.SMTP_USER
+            }
+
+            >`,
         replyTo: email,
         to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
         subject: "New Payment Notification",
-        text: `Name: ${name || "N/A"}\nEmail: ${email || "N/A"}\nAmount: AUD ${amount}`,
+        text: `Name: $ {
+              name || "N/A"
+            }
+
+            \nEmail: $ {
+              email || "N/A"
+            }
+
+            \nAmount: AUD $ {
+              amount
+            }
+
+            `,
       });
     }
-    console.log(
-      `✅ Payment notification received for ${name || "Customer"}. Amount: AUD ${amount}`,
-    );
-    res.json({ success: true });
+
+    console.log(`✅ Payment notification received for $ {
+          name || "Customer"
+        }
+
+        . Amount: AUD $ {
+          amount
+        }
+
+        `);
+
+    res.json({
+      success: true,
+    });
   } catch (err) {
     console.error("Failed to process payment notification:", err);
-    res.status(500).json({ error: "Failed to process request" });
+
+    res.status(500).json({
+      error: "Failed to process request",
+    });
   }
 });
 
@@ -429,52 +637,92 @@ app.post("/api/contact", async (req, res) => {
   const { name, phone, email } = req.body;
 
   if (!name || !phone || !email) {
-    return res.status(400).json({ error: "Please fill out all fields." });
+    return res.status(400).json({
+      error: "Please fill out all fields.",
+    });
   }
 
   try {
     if (process.env.SMTP_USER) {
       await transporter.sendMail({
-        from: `"${name}" <${process.env.SMTP_USER}>`,
+        from: `"${name}"<$ {
+              process.env.SMTP_USER
+            }
+
+            >`,
         replyTo: email,
         to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
         subject: "New Contact Enquiry",
-        text: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}`,
+        text: `Name: $ {
+              name
+            }
+
+            \nPhone: $ {
+              phone
+            }
+
+            \nEmail: $ {
+              email
+            }
+
+            `,
       });
     }
-    console.log(`✅ New Contact Enquiry received from ${name}.`);
-    res.json({ success: true });
+
+    console.log(`✅ New Contact Enquiry received from $ {
+          name
+        }
+
+        .`);
+
+    res.json({
+      success: true,
+    });
   } catch (err) {
     console.error("Failed to process contact enquiry:", err);
-    res
-      .status(500)
-      .json({ error: "Failed to process request. Please try again." });
+
+    res.status(500).json({
+      error: "Failed to process request. Please try again.",
+    });
   }
 });
 
 app.post(
   "/api/employment",
-  upload.fields([{ name: "resume" }, { name: "coverLetter" }]),
+  upload.fields([
+    {
+      name: "resume",
+    },
+    {
+      name: "coverLetter",
+    },
+  ]),
   async (req, res) => {
     const { name, phone, email } = req.body;
 
     if (!name || !phone || !email) {
-      return res.status(400).json({ error: "Please fill out all fields." });
+      return res.status(400).json({
+        error: "Please fill out all fields.",
+      });
     }
 
     if (!req.files || !req.files.resume) {
-      return res.status(400).json({ error: "Resume is required." });
+      return res.status(400).json({
+        error: "Resume is required.",
+      });
     }
 
     try {
       if (process.env.SMTP_USER) {
         const attachments = [];
+
         if (req.files.resume && req.files.resume[0]) {
           attachments.push({
             filename: req.files.resume[0].originalname,
             content: req.files.resume[0].buffer,
           });
         }
+
         if (req.files.coverLetter && req.files.coverLetter[0]) {
           attachments.push({
             filename: req.files.coverLetter[0].originalname,
@@ -483,33 +731,60 @@ app.post(
         }
 
         await transporter.sendMail({
-          from: `"${name}" <${process.env.SMTP_USER}>`,
+          from: `"${name}"<$ {
+              process.env.SMTP_USER
+            }
+
+            >`,
           replyTo: email,
           to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
           subject: "New Employment Application",
-          text: `Name: ${name}\nPhone: ${phone}\nEmail: ${email}`,
+          text: `Name: $ {
+              name
+            }
+
+            \nPhone: $ {
+              phone
+            }
+
+            \nEmail: $ {
+              email
+            }
+
+            `,
           attachments,
         });
       }
 
-      console.log(`✅ New Employment Application received from ${name}.`);
-      res.json({ success: true });
+      console.log(`✅ New Employment Application received from $ {
+          name
+        }
+
+        .`);
+
+      res.json({
+        success: true,
+      });
     } catch (err) {
       console.error("Failed to process employment application:", err);
-      res
-        .status(500)
-        .json({ error: "Failed to send your application. Please try again." });
+
+      res.status(500).json({
+        error: "Failed to send your application. Please try again.",
+      });
     }
   },
 );
 
 app.post("/api/create-checkout-session", async (req, res) => {
   const { name, email, amount } = req.body;
+
   try {
     // Dynamically get the current domain (works for localhost and live)
-    const domainURL = req.headers.origin || `http://${req.headers.host}`;
+    const domainURL = req.headers.origin || `http: //${req.headers.host}`;
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card", "au_becs_debit"], // Supports cards & Australian bank accounts
+
       customer_email: email,
       line_items: [
         {
@@ -518,19 +793,39 @@ app.post("/api/create-checkout-session", async (req, res) => {
             product_data: {
               name: "Biloela Plumbing Works - Gas Order",
             },
+
             unit_amount: Math.round(parseFloat(amount) * 100), // Stripe requires amounts in cents
           },
+
           quantity: 1,
         },
       ],
       mode: "payment",
-      success_url: `${domainURL}/HTML/Gas%20request.html?paid=true`,
-      cancel_url: `${domainURL}/HTML/payment.html?amount=${amount}`,
+      success_url: `$ {
+            domainURL
+          }
+
+          /HTML/Gas%20request.html?paid=true`,
+      cancel_url: `$ {
+            domainURL
+          }
+
+          /HTML/payment.html?amount=$ {
+            amount
+          }
+
+          `,
     });
-    res.json({ url: session.url });
+
+    res.json({
+      url: session.url,
+    });
   } catch (err) {
     console.error("Stripe error:", err);
-    res.status(500).json({ error: err.message });
+
+    res.status(500).json({
+      error: err.message,
+    });
   }
 });
 
@@ -546,15 +841,22 @@ app.get("/api/distance", async (req, res, next) => {
   }
 
   if (!address) {
-    return res.status(400).json({ error: "Address parameter is required." });
+    return res.status(400).json({
+      error: "Address parameter is required.",
+    });
   }
 
   try {
     const searchAddress = address.toLowerCase().includes("australia")
       ? address
-      : `${address}, QLD, Australia`;
+      : `$ {
+        address
+      }
+
+      , QLD, Australia`;
 
     let response;
+
     try {
       response = await googleMapsClient.distancematrix({
         params: {
@@ -563,6 +865,7 @@ app.get("/api/distance", async (req, res, next) => {
           key: apiKey,
           region: "au",
         },
+
         timeout: 5000,
       });
     } catch (apiErr) {
@@ -574,10 +877,21 @@ app.get("/api/distance", async (req, res, next) => {
     }
 
     if (response.data.status !== "OK") {
-      console.error(
-        `Google API Top-Level Error: ${response.data.status} | Details: ${response.data.error_message || "None"}`,
-      );
-      throw new Error(`Google Maps API Error: ${response.data.status}`);
+      console.error(`Google API Top-Level Error: $ {
+            response.data.status
+          }
+
+          | Details: $ {
+            response.data.error_message || "None"
+          }
+
+          `);
+
+      throw new Error(`Google Maps API Error: $ {
+            response.data.status
+          }
+
+          `);
     }
 
     const result = response.data.rows[0].elements[0];
@@ -585,15 +899,33 @@ app.get("/api/distance", async (req, res, next) => {
     if (result.status === "OK") {
       const distanceInMeters = result.distance.value;
       const distanceInKm = (distanceInMeters / 1000).toFixed(1);
-      res.json({ distance: parseFloat(distanceInKm) });
+
+      res.json({
+        distance: parseFloat(distanceInKm),
+      });
     } else {
-      console.error(
-        `Distance Matrix API failed. Status: ${result.status} for address: ${searchAddress}`,
-      );
-      throw new Error(`Could not calculate distance. Status: ${result.status}`);
+      console.error(`Distance Matrix API failed. Status: $ {
+            result.status
+          }
+
+          for address: $ {
+            searchAddress
+          }
+
+          `);
+
+      throw new Error(`Could not calculate distance. Status: $ {
+            result.status
+          }
+
+          `);
     }
   } catch (error) {
-    error.message = `Google Maps API Error: ${error.message}`;
+    error.message = `Google Maps API Error: $ {
+        error.message
+      }
+
+      `;
     next(error);
   }
 });
@@ -601,7 +933,7 @@ app.get("/api/distance", async (req, res, next) => {
 // 404 Handler: Catch requests for pages/APIs that don't exist
 app.use((req, res, next) => {
   const err = new Error(
-    `The requested path '${req.originalUrl}' was not found.`,
+    `The requested path '${req.originalUrl}'was not found.`,
   );
   err.status = 404;
   next(err);
@@ -610,8 +942,17 @@ app.use((req, res, next) => {
 // Global Error Handler: Catch all unexpected errors
 app.use((err, req, res, next) => {
   const status = err.status || 500;
+
   // Log to the VS Code terminal so you know exactly where the error is
-  console.error(`[Server Error] Status: ${status} | Message: ${err.message}`);
+  console.error(`[Server Error] Status: $ {
+        status
+      }
+
+      | Message: $ {
+        err.message
+      }
+
+      `);
   if (err.stack && status !== 404) console.error(err.stack);
 
   res.status(status).json({
@@ -623,14 +964,20 @@ app.use((err, req, res, next) => {
 
 app
   .listen(port, () => {
-    console.log(`Server listening on http://localhost:${port}`);
+    console.log(`Server listening on http: //localhost:${port}`);
   })
   .on("error", (err) => {
     if (err.code === "EADDRINUSE") {
-      console.error(
-        `FATAL ERROR: Port ${port} is already in use. Please close other programs or change the port in server.js.`,
-      );
+      console.error(`FATAL ERROR: Port $ {
+            port
+          }
+
+          is already in use. Please close other programs or change the port in server.js.`);
     } else {
-      console.error(`FATAL ERROR: Server failed to start: ${err.message}`);
+      console.error(`FATAL ERROR: Server failed to start: $ {
+            err.message
+          }
+
+          `);
     }
   });

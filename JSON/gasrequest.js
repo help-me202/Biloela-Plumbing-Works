@@ -135,6 +135,8 @@ document.addEventListener("DOMContentLoaded", () => {
     checkFulfillmentLogic();
 
     const size = getSelectedSize();
+    const sizeWeight = parseFloat(size);
+    const isUnder18Kg = Number.isFinite(sizeWeight) && sizeWeight < 18;
     let date = dateEl.value;
 
     // Prevent weekend selection
@@ -176,7 +178,12 @@ document.addEventListener("DOMContentLoaded", () => {
       .then(async (response) => {
         if (!response.ok) {
           const body = await response.json().catch(() => ({}));
-          throw new Error(body.error || "Unable to fetch pricing");
+          throw new Error(
+            body.error ||
+              (isUnder18Kg
+                ? "Please pay and collect instore"
+                : "Unable to fetch pricing"),
+          );
         }
         return response.json();
       })
