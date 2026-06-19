@@ -282,6 +282,49 @@ h1::after {
     height: auto !important;
 }
 
+/* Mining page: explicit side-by-side layout with image scaled to text block */
+.mining-page .page-content {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: clamp(20px, 4vw, 48px);
+    width: min(1200px, 100%);
+    padding: 0 20px 40px;
+    box-sizing: border-box;
+}
+
+.mining-page .image-block {
+    position: static;
+    inset: auto;
+    pointer-events: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.mining-page .scatter,
+.mining-page .scatter.pos-left,
+.mining-page .scatter.pos-left.large-image {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: rotate(2deg);
+    display: block;
+    box-sizing: border-box;
+    margin: 0;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    border: 3px solid #dd22a8;
+    object-fit: cover;
+}
+
+.mining-page .text-column {
+    margin: 0 !important;
+    max-width: none;
+    align-self: start;
+}
+
 @media (min-width: 901px) {
     .has-large-image .text-column {
         margin-left: clamp(250px, 43vw, 590px);
@@ -398,6 +441,24 @@ h1::after {
     .potable-water-page .scatter,
     .potable-water-page .scatter.pos-left,
     .potable-water-page .scatter.pos-left.large-image {
+        width: min(100%, 460px);
+        height: auto;
+        max-width: 460px;
+    }
+
+    .mining-page .page-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 0 12px 24px;
+    }
+
+    .mining-page .image-block {
+        justify-content: center;
+    }
+
+    .mining-page .scatter,
+    .mining-page .scatter.pos-left,
+    .mining-page .scatter.pos-left.large-image {
         width: min(100%, 460px);
         height: auto;
         max-width: 460px;
