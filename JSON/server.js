@@ -16,7 +16,20 @@ const nodemailer = require("nodemailer");
 const port = process.env.PORT || 3000;
 
 // Security precautions
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        frameSrc: [
+          "'self'",
+          "https://www.google.com",
+          "https://maps.google.com",
+        ],
+      },
+    },
+  }),
+);
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes

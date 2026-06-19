@@ -201,6 +201,22 @@
     </div>
 
     <script>
+      const fallbackMapUrl =
+        "https://maps.google.com/maps?q=5%20Dunn%20Street,%20Biloela%20QLD,%20Australia&t=&z=15&ie=UTF8&iwloc=&output=embed";
+
+      function renderMap(mapUrl) {
+        const mapContainer = document.getElementById("map-container");
+
+        mapContainer.innerHTML = `
+          <iframe
+            src="${mapUrl}"
+            allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"
+          ></iframe>
+        `;
+      }
+
       // Load map data from backend API
       async function loadMapData() {
         try {
@@ -214,26 +230,13 @@
           }
 
           if (data.success && data.mapUrl) {
-            const mapContainer = document.getElementById("map-container");
-            mapContainer.innerHTML = `
-              <iframe
-                src="${data.mapUrl}"
-                allowfullscreen=""
-                loading="lazy"
-                referrerpolicy="no-referrer-when-downgrade"
-              ></iframe>
-            `;
+            renderMap(data.mapUrl || fallbackMapUrl);
           } else {
             throw new Error("Invalid map data received.");
           }
         } catch (error) {
           console.error("Map loading error:", error);
-          const mapContainer = document.getElementById("map-container");
-          mapContainer.innerHTML = `
-            <p style="text-align: center; color: #d32f2f; padding: 20px;">
-              Failed to load map. Please refresh the page or try again later.
-            </p>
-          `;
+          renderMap(fallbackMapUrl);
         }
       }
 
