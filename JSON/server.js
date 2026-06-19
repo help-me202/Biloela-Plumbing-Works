@@ -14,6 +14,21 @@ const helmet = require("helmet");
 const rateLimit = require("express-rate-limit");
 const nodemailer = require("nodemailer");
 const port = process.env.PORT || 3000;
+const CONTACT_ADDRESS = "5 Dunn Street, Biloela QLD 4715, Australia";
+const FALLBACK_MAP_URL =
+  "https://maps.google.com/maps?q=5%20Dunn%20Street,%20Biloela%20QLD,%20Australia&t=&z=15&ie=UTF8&iwloc=&output=embed";
+const MAP_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
+const MAP_HEALTH_ENABLED = process.env.ENABLE_MAP_HEALTH === "true";
+const MAP_HEALTH_TOKEN = process.env.MAP_HEALTH_TOKEN || "";
+let cachedMapLocation = null;
+let mapDiagnostics = {
+  lastAttemptAt: null,
+  lastSuccessAt: null,
+  lastFailureAt: null,
+  lastSource: "startup",
+  lastError: null,
+  lastHttpStatus: null,
+};
 
 // Security precautions
 app.use(
@@ -21,6 +36,7 @@ app.use(
     contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
         frameSrc: [
           "'self'",
           "https://www.google.com",
@@ -362,9 +378,7 @@ async function getDistance(address) {
   // Append state and country to help Google accurately find local addresses
   const searchAddress = address.toLowerCase().includes("australia")
     ? address
-    : `$ {
-    address
-  }
+    : `${address}
 
   ,
   QLD,
@@ -393,19 +407,13 @@ async function getDistance(address) {
 
   // Safely handle top-level Google API errors (like REQUEST_DENIED for invalid keys)
   if (response.data.status !== "OK") {
-    console.error(`Google API Top-Level Error: $ {
-        response.data.status
-      }
+    console.error(`Google API Top-Level Error: ${response.data.status}
 
-      | Details: $ {
-        response.data.error_message || "None"
-      }
+      | Details: ${response.data.error_message || "None"}
 
       `);
 
-    throw new Error(`Google Maps API Error: $ {
-        response.data.status
-      }
+    throw new Error(`Google Maps API Error: ${response.data.status}
 
       `);
   }
@@ -416,19 +424,13 @@ async function getDistance(address) {
     const distanceInMeters = result.distance.value;
     return parseFloat((distanceInMeters / 1000).toFixed(1));
   } else {
-    console.error(`Google Maps Distance Matrix failed. Status: $ {
-        result.status
-      }
+    console.error(`Google Maps Distance Matrix failed. Status: ${result.status}
 
-      for address: $ {
-        searchAddress
-      }
+      for address: ${searchAddress}
 
       `);
 
-    throw new Error(`Could not calculate distance. Status: $ {
-        result.status
-      }
+    throw new Error(`Could not calculate distance. Status: ${result.status}
 
       `);
   }
@@ -574,45 +576,27 @@ app.post("/api/reserve", async (req, res) => {
   try {
     if (process.env.SMTP_USER) {
       await transporter.sendMail({
-        from: `"${name || "Customer"}"<$ {
-              process.env.SMTP_USER
-            }
+        from: `"${name || "Customer"}"<${process.env.SMTP_USER}
 
             >`,
         replyTo: email,
         to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
         subject: "New Gas Reservation",
-        text: `Name: $ {
-              name || "N/A"
-            }
+        text: `Name: ${name || "N/A"}
 
-            \nEmail: $ {
-              email || "N/A"
-            }
+            \nEmail: ${email || "N/A"}
 
-            \nContact: $ {
-              contact || "N/A"
-            }
+            \nContact: ${contact || "N/A"}
 
-            \nSize: $ {
-              size
-            }
+            \nSize: ${size}
 
-            \nQuantity: $ {
-              quantity
-            }
+            \nQuantity: ${quantity}
 
-            \nDate: $ {
-              date
-            }
+            \nDate: ${date}
 
-            \nCollection: $ {
-              collection
-            }
+            \nCollection: ${collection}
 
-            \nAddress: $ {
-              address || "N/A"
-            }
+            \nAddress: ${address || "N/A"}
 
             `,
       });
@@ -621,9 +605,7 @@ app.post("/api/reserve", async (req, res) => {
     console.error("Failed to send reservation email:", err);
   }
 
-  console.log(`✅ New Gas Request processed for $ {
-        name || "Customer"
-      }
+  console.log(`✅ New Gas Request processed for ${name || "Customer"}
 
       .`);
 
@@ -651,13 +633,9 @@ app.post("/api/notify-payment", async (req, res) => {
       req.body,
     );
 
-    console.log(`✅ Payment notification received for $ {
-          name || "Customer"
-        }
+    console.log(`✅ Payment notification received for ${name || "Customer"}
 
-        . Amount: AUD $ {
-          amount
-        }
+        . Amount: AUD ${amount}
 
         `);
 
@@ -685,33 +663,23 @@ app.post("/api/contact", async (req, res) => {
   try {
     if (process.env.SMTP_USER) {
       await transporter.sendMail({
-        from: `"${name}"<$ {
-              process.env.SMTP_USER
-            }
+        from: `"${name}"<${process.env.SMTP_USER}
 
             >`,
         replyTo: email,
         to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
         subject: "New Contact Enquiry",
-        text: `Name: $ {
-              name
-            }
+        text: `Name: ${name}
 
-            \nPhone: $ {
-              phone
-            }
+            \nPhone: ${phone}
 
-            \nEmail: $ {
-              email
-            }
+            \nEmail: ${email}
 
             `,
       });
     }
 
-    console.log(`✅ New Contact Enquiry received from $ {
-          name
-        }
+    console.log(`✅ New Contact Enquiry received from ${name}
 
         .`);
 
@@ -771,34 +739,24 @@ app.post(
         }
 
         await transporter.sendMail({
-          from: `"${name}"<$ {
-              process.env.SMTP_USER
-            }
+          from: `"${name}"<${process.env.SMTP_USER}
 
             >`,
           replyTo: email,
           to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
           subject: "New Employment Application",
-          text: `Name: $ {
-              name
-            }
+          text: `Name: ${name}
 
-            \nPhone: $ {
-              phone
-            }
+            \nPhone: ${phone}
 
-            \nEmail: $ {
-              email
-            }
+            \nEmail: ${email}
 
             `,
           attachments,
         });
       }
 
-      console.log(`✅ New Employment Application received from $ {
-          name
-        }
+      console.log(`✅ New Employment Application received from ${name}
 
         .`);
 
@@ -956,9 +914,7 @@ app.get("/api/distance", async (req, res, next) => {
   try {
     const searchAddress = address.toLowerCase().includes("australia")
       ? address
-      : `$ {
-        address
-      }
+      : `${address}
 
       , QLD, Australia`;
 
@@ -984,19 +940,13 @@ app.get("/api/distance", async (req, res, next) => {
     }
 
     if (response.data.status !== "OK") {
-      console.error(`Google API Top-Level Error: $ {
-            response.data.status
-          }
+      console.error(`Google API Top-Level Error: ${response.data.status}
 
-          | Details: $ {
-            response.data.error_message || "None"
-          }
+          | Details: ${response.data.error_message || "None"}
 
           `);
 
-      throw new Error(`Google Maps API Error: $ {
-            response.data.status
-          }
+      throw new Error(`Google Maps API Error: ${response.data.status}
 
           `);
     }
@@ -1011,26 +961,18 @@ app.get("/api/distance", async (req, res, next) => {
         distance: parseFloat(distanceInKm),
       });
     } else {
-      console.error(`Distance Matrix API failed. Status: $ {
-            result.status
-          }
+      console.error(`Distance Matrix API failed. Status: ${result.status}
 
-          for address: $ {
-            searchAddress
-          }
+          for address: ${searchAddress}
 
           `);
 
-      throw new Error(`Could not calculate distance. Status: $ {
-            result.status
-          }
+      throw new Error(`Could not calculate distance. Status: ${result.status}
 
           `);
     }
   } catch (error) {
-    error.message = `Google Maps API Error: $ {
-        error.message
-      }
+    error.message = `Google Maps API Error: ${error.message}
 
       `;
     next(error);
@@ -1040,17 +982,37 @@ app.get("/api/distance", async (req, res, next) => {
 // Google Maps location endpoint for contact page
 app.get("/api/maps/location", async (req, res, next) => {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  mapDiagnostics.lastAttemptAt = new Date().toISOString();
+
+  if (
+    cachedMapLocation &&
+    Date.now() - cachedMapLocation.cachedAt < MAP_CACHE_TTL_MS
+  ) {
+    mapDiagnostics.lastSource = "cache";
+    mapDiagnostics.lastError = null;
+    mapDiagnostics.lastHttpStatus = 200;
+    return res.json(cachedMapLocation.payload);
+  }
 
   if (!apiKey) {
-    return res.status(500).json({
-      error: "Google Maps API key is not configured on the server.",
+    mapDiagnostics.lastSource = "fallback-no-api-key";
+    mapDiagnostics.lastFailureAt = new Date().toISOString();
+    mapDiagnostics.lastError = "GOOGLE_MAPS_API_KEY is not configured";
+    mapDiagnostics.lastHttpStatus = 500;
+    return res.json({
+      success: true,
+      address: CONTACT_ADDRESS,
+      coordinates: null,
+      formattedAddress: CONTACT_ADDRESS,
+      mapUrl: FALLBACK_MAP_URL,
+      source: "fallback-no-api-key",
     });
   }
 
   try {
     const response = await googleMapsClient.geocode({
       params: {
-        address: "5 Dunn Street, Biloela QLD 4715, Australia",
+        address: CONTACT_ADDRESS,
         key: apiKey,
         region: "au",
       },
@@ -1068,20 +1030,87 @@ app.get("/api/maps/location", async (req, res, next) => {
     const result = response.data.results[0];
     const { lat, lng } = result.geometry.location;
 
-    res.json({
+    const payload = {
       success: true,
-      address: "5 Dunn Street, Biloela QLD 4715, Australia",
+      address: CONTACT_ADDRESS,
       coordinates: {
         latitude: lat,
         longitude: lng,
       },
       formattedAddress: result.formatted_address,
-      mapUrl: `https://maps.google.com/maps?q=5%20Dunn%20Street,%20Biloela%20QLD,%20Australia&t=&z=15&ie=UTF8&iwloc=&output=embed`,
-    });
+      mapUrl: FALLBACK_MAP_URL,
+      source: "google-geocode",
+    };
+
+    cachedMapLocation = {
+      cachedAt: Date.now(),
+      payload,
+    };
+
+    mapDiagnostics.lastSuccessAt = new Date().toISOString();
+    mapDiagnostics.lastSource = "google-geocode";
+    mapDiagnostics.lastError = null;
+    mapDiagnostics.lastHttpStatus = 200;
+
+    res.json(payload);
   } catch (error) {
-    console.error("Maps location endpoint error:", error.message);
-    next(error);
+    console.error(
+      "Maps location endpoint error, serving fallback:",
+      error.message,
+    );
+    mapDiagnostics.lastFailureAt = new Date().toISOString();
+    mapDiagnostics.lastSource = "fallback-error";
+    mapDiagnostics.lastError = error.message;
+    mapDiagnostics.lastHttpStatus = error.response?.status || null;
+    res.json({
+      success: true,
+      address: CONTACT_ADDRESS,
+      coordinates: null,
+      formattedAddress: CONTACT_ADDRESS,
+      mapUrl: FALLBACK_MAP_URL,
+      source: "fallback-error",
+      error: "Map geocoding unavailable; fallback map returned.",
+    });
   }
+});
+
+// Safe diagnostics endpoint for map troubleshooting (no secrets)
+app.get("/api/maps/health", (req, res) => {
+  if (!MAP_HEALTH_ENABLED) {
+    return res.status(404).json({
+      error: "Not found",
+    });
+  }
+
+  if (MAP_HEALTH_TOKEN) {
+    const headerToken = req.get("x-map-health-token") || "";
+    const queryToken =
+      typeof req.query.token === "string" ? req.query.token : "";
+
+    if (headerToken !== MAP_HEALTH_TOKEN && queryToken !== MAP_HEALTH_TOKEN) {
+      return res.status(401).json({
+        error: "Unauthorized",
+      });
+    }
+  }
+
+  const hasApiKey = Boolean(process.env.GOOGLE_MAPS_API_KEY);
+  const cacheAgeMs = cachedMapLocation
+    ? Date.now() - cachedMapLocation.cachedAt
+    : null;
+  const cacheTtlRemainingMs =
+    cacheAgeMs === null ? null : Math.max(0, MAP_CACHE_TTL_MS - cacheAgeMs);
+
+  res.json({
+    success: true,
+    mapsConfigured: hasApiKey,
+    cache: {
+      hasCachedLocation: Boolean(cachedMapLocation),
+      cacheAgeMs,
+      cacheTtlRemainingMs,
+    },
+    diagnostics: mapDiagnostics,
+  });
 });
 
 // 404 Handler: Catch requests for pages/APIs that don't exist
@@ -1096,23 +1125,19 @@ app.use((req, res, next) => {
 // Global Error Handler: Catch all unexpected errors
 app.use((err, req, res, next) => {
   const status = err.status || 500;
+  const publicMessage = status >= 500 ? "Internal server error" : err.message;
 
   // Log to the VS Code terminal so you know exactly where the error is
-  console.error(`[Server Error] Status: $ {
-        status
-      }
+  console.error(`[Server Error] Status: ${status}
 
-      | Message: $ {
-        err.message
-      }
+      | Message: ${err.message}
 
       `);
   if (err.stack && status !== 404) console.error(err.stack);
 
   res.status(status).json({
-    error: err.message,
+    error: publicMessage,
     status: status,
-    stack: status === 404 ? undefined : err.stack,
   });
 });
 
@@ -1122,15 +1147,11 @@ app
   })
   .on("error", (err) => {
     if (err.code === "EADDRINUSE") {
-      console.error(`FATAL ERROR: Port $ {
-            port
-          }
+      console.error(`FATAL ERROR: Port ${port}
 
           is already in use. Please close other programs or change the port in server.js.`);
     } else {
-      console.error(`FATAL ERROR: Server failed to start: $ {
-            err.message
-          }
+      console.error(`FATAL ERROR: Server failed to start: ${err.message}
 
           `);
     }
