@@ -1024,6 +1024,53 @@ app.get("/api/distance", async (req, res, next) => {
   }
 });
 
+// Google Maps location endpoint for contact page
+app.get("/api/maps/location", async (req, res, next) => {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+
+  if (!apiKey) {
+    return res.status(500).json({
+      error: "Google Maps API key is not configured on the server.",
+    });
+  }
+
+  try {
+    const response = await googleMapsClient.geocode({
+      params: {
+        address: "5 Dunn Street, Biloela QLD 4715, Australia",
+        key: apiKey,
+        region: "au",
+      },
+      timeout: 5000,
+    });
+
+    if (response.data.status !== "OK") {
+      throw new Error(`Geocoding failed: ${response.data.status}`);
+    }
+
+    if (response.data.results.length === 0) {
+      throw new Error("No location found for the address.");
+    }
+
+    const result = response.data.results[0];
+    const { lat, lng } = result.geometry.location;
+
+    res.json({
+      success: true,
+      address: "5 Dunn Street, Biloela QLD 4715, Australia",
+      coordinates: {
+        latitude: lat,
+        longitude: lng,
+      },
+      formattedAddress: result.formatted_address,
+      mapUrl: `https://maps.google.com/maps?q=5%20Dunn%20Street,%20Biloela%20QLD,%20Australia&t=&z=15&ie=UTF8&iwloc=&output=embed`,
+    });
+  } catch (error) {
+    console.error("Maps location endpoint error:", error.message);
+    next(error);
+  }
+});
+
 // 404 Handler: Catch requests for pages/APIs that don't exist
 app.use((req, res, next) => {
   const err = new Error(
