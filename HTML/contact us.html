@@ -219,8 +219,16 @@
 
       // Load map data from backend API
       async function loadMapData() {
+        // Render a guaranteed fallback immediately so the UI never stays in loading state.
+        renderMap(fallbackMapUrl);
+
         try {
-          const response = await fetch("/api/maps/location");
+          const controller = new AbortController();
+          const timeout = setTimeout(() => controller.abort(), 5000);
+          const response = await fetch("/api/maps/location", {
+            signal: controller.signal,
+          });
+          clearTimeout(timeout);
           const data = await response.json();
 
           if (!response.ok) {
@@ -236,7 +244,6 @@
           }
         } catch (error) {
           console.error("Map loading error:", error);
-          renderMap(fallbackMapUrl);
         }
       }
 
