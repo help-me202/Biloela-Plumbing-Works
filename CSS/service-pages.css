@@ -148,6 +148,7 @@ h1::after {
     margin: 10px auto 40px;
     padding: 0 20px;
     position: relative;
+    flex: 1;
 }
 
 .image-block {
