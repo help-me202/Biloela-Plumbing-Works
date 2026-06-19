@@ -226,6 +226,62 @@ h1::after {
     right: 2%;
 }
 
+/* Potable Water page specific styling - centered on left with standard Hook Bins size */
+.potable-water-page .scatter.pos-left.large-image {
+    width: clamp(220px, 40vw, 550px);
+    left: -3%;
+}
+
+/* Potable Water page: explicit side-by-side layout */
+.potable-water-page .page-content {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+    gap: clamp(20px, 4vw, 48px);
+    width: min(1200px, 100%);
+    padding: 0 20px 40px;
+    box-sizing: border-box;
+}
+
+.potable-water-page .image-block {
+    position: static;
+    inset: auto;
+    pointer-events: auto;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.potable-water-page .scatter,
+.potable-water-page .scatter.pos-left,
+.potable-water-page .scatter.pos-left.large-image {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: rotate(2deg);
+    display: block;
+    box-sizing: border-box;
+    margin: 0;
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    aspect-ratio: auto;
+    object-fit: fill;
+    border: 3px solid #dd22a8;
+    background-color: transparent;
+    filter: none;
+}
+
+.potable-water-page .text-column {
+    margin: 0 !important;
+    max-width: none;
+    align-self: start;
+}
+
+.potable-water-page .service-container {
+    height: auto !important;
+}
+
 @media (min-width: 901px) {
     .has-large-image .text-column {
         margin-left: clamp(250px, 43vw, 590px);
@@ -327,5 +383,23 @@ h1::after {
     .text-column {
         margin: 0;
         padding: 0 12px;
+    }
+
+    .potable-water-page .page-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 0 12px 24px;
+    }
+
+    .potable-water-page .image-block {
+        justify-content: center;
+    }
+
+    .potable-water-page .scatter,
+    .potable-water-page .scatter.pos-left,
+    .potable-water-page .scatter.pos-left.large-image {
+        width: min(100%, 460px);
+        height: auto;
+        max-width: 460px;
     }
 }
