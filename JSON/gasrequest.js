@@ -1,4 +1,8 @@
 document.addEventListener("DOMContentLoaded", () => {
+  const FEATURE_FLAGS = {
+    enableOnlinePayment: false,
+  };
+
   const apiBase = ""; // Empty string allows relative paths for both localhost and live domain
   const sizeEl = document.getElementById("size");
   const dateEl = document.getElementById("date");
@@ -11,6 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const gstAmountEl = document.getElementById("gst-amount");
   const stockSummary = document.getElementById("stock-summary");
   const deliveryPayment = document.getElementById("delivery-payment");
+  const deliveryPaymentPhone = document.getElementById(
+    "delivery-payment-phone",
+  );
+  const deliveryPaymentOnline = document.getElementById(
+    "delivery-payment-online",
+  );
   const calculatedPrice = document.getElementById("calculatedPrice");
   const submitBtn = document.getElementById("submit-btn");
   const form = document.querySelector("form.form");
@@ -62,24 +72,25 @@ document.addEventListener("DOMContentLoaded", () => {
     orderResult.className = `order-result ${type}`;
   }
 
-  // Check if we came back from payment callback
-  const urlParams = new URLSearchParams(window.location.search);
-  const paidParam = urlParams.get("paid");
-  const paymentReference = urlParams.get("reference");
+  // Keep legacy payment callback support in place but disabled via feature flag.
+  if (FEATURE_FLAGS.enableOnlinePayment) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paidParam = urlParams.get("paid");
+    const paymentReference = urlParams.get("reference");
 
-  if (paidParam === "true") {
-    updateOrderResult(
-      `Paid request has been sent${paymentReference ? ` (Ref: ${paymentReference})` : ""}`,
-      "success",
-    );
-    // Clear URL parameters so they don't persist on refresh
-    window.history.replaceState({}, document.title, window.location.pathname);
-  } else if (paidParam === "false") {
-    updateOrderResult(
-      `Payment was not successful${paymentReference ? ` (Ref: ${paymentReference})` : ""}. Please try again.`,
-      "error",
-    );
-    window.history.replaceState({}, document.title, window.location.pathname);
+    if (paidParam === "true") {
+      updateOrderResult(
+        `Paid request has been sent${paymentReference ? ` (Ref: ${paymentReference})` : ""}`,
+        "success",
+      );
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (paidParam === "false") {
+      updateOrderResult(
+        `Payment was not successful${paymentReference ? ` (Ref: ${paymentReference})` : ""}. Please try again.`,
+        "error",
+      );
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
   }
 
   function setResult(message, isError = false) {
@@ -88,8 +99,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateDeliveryMessage() {
+    const is45kg = sizeEl.value === "45kg";
     deliveryPayment.style.display =
-      collectionEl.value === "delivery" ? "block" : "none";
+      collectionEl.value === "delivery" && is45kg ? "block" : "none";
+
+    if (deliveryPaymentPhone && deliveryPaymentOnline) {
+      deliveryPaymentPhone.style.display = FEATURE_FLAGS.enableOnlinePayment
+        ? "none"
+        : "inline";
+      deliveryPaymentOnline.style.display = FEATURE_FLAGS.enableOnlinePayment
+        ? "inline"
+        : "none";
+    }
   }
 
   function getSelectedSize() {
@@ -217,8 +238,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return response.json();
       })
       .then((data) => {
-        priceInfo.style.display =
-          data.product.size === "45kg" ? "none" : "block";
+        priceInfo.style.display = "block";
         availableStock = data.available;
 
         const itemFee = collection === "delivery" ? data.deliveryFee : 0;
@@ -250,14 +270,18 @@ document.addEventListener("DOMContentLoaded", () => {
           submitBtn.style.display = "none";
         } else {
           stockSummary.style.color = "#111";
-          submitBtn.disabled = collection === "delivery";
+          submitBtn.disabled = false;
           submitBtn.style.display = "block";
         }
 
-        const payLink = deliveryPayment.querySelector("a");
-        if (payLink) {
-          payLink.href = `payment.html?provider=commbank&source=gas-request&amount=${encodeURIComponent(totalPrice.toFixed(2))}`;
+        if (FEATURE_FLAGS.enableOnlinePayment) {
+          const payLink = deliveryPayment.querySelector("a");
+          if (payLink) {
+            payLink.href = `payment.html?provider=commbank&source=gas-request&amount=${encodeURIComponent(totalPrice.toFixed(2))}`;
+          }
         }
+
+        updateDeliveryMessage();
       })
       .catch((error) => {
         console.error("Pricing API Error:", error);
@@ -270,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
         stockSummary.textContent = "";
         calculatedPrice.value = "";
         availableStock = null;
-        submitBtn.disabled = collection === "delivery";
+        submitBtn.disabled = false;
         submitBtn.style.display = "block";
 
         // Show an error message if the address is missing for delivery
@@ -339,7 +363,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const collection = collectionEl.value;
     const address = addressEl ? addressEl.value.trim() : "";
 
-    if (collection === "delivery") {
+    if (FEATURE_FLAGS.enableOnlinePayment && collection === "delivery") {
       updateOrderResult(
         "For delivery orders, please pay using the link provided below first.",
         "error",
@@ -381,7 +405,12 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .then((data) => {
         let successMsg = `Order reserved successfully. Reserved ${data.reserved} unit${data.reserved === 1 ? "" : "s"}. Remaining stock: ${data.remaining}.`;
-        if (collection !== "delivery") {
+        if (FEATURE_FLAGS.enableOnlinePayment && collection === "delivery") {
+          successMsg += " Delivery payment confirmation is required.";
+        } else if (collection === "delivery" && sizeEl.value === "45kg") {
+          successMsg +=
+            " For 45kg delivery requests, please pay over the phone.";
+        } else if (collection !== "delivery") {
           successMsg += " Please pay upon collection.";
         }
         updateOrderResult(successMsg, "success");
@@ -402,7 +431,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       })
       .finally(() => {
-        submitBtn.disabled = collection === "delivery";
+        submitBtn.disabled = false;
       });
   });
 

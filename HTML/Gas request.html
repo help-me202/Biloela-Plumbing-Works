@@ -137,11 +137,16 @@
         <p id="stock-summary"></p>
       </div>
       <p id="delivery-payment" class="delivery-payment" style="display: none">
-        If you choose delivery, please
-        <a href="payment.html?provider=commbank&source=gas-request"
-          >pay through CommBank here</a
+        <span id="delivery-payment-phone"
+          >For 45kg delivery requests, please pay over the phone.</span
         >
-        for delivery fees.
+        <span id="delivery-payment-online" style="display: none">
+          If you choose delivery, please
+          <a href="payment.html?provider=commbank&source=gas-request"
+            >pay through CommBank here</a
+          >
+          for delivery fees.
+        </span>
       </p>
       <input
         type="hidden"
@@ -158,4 +163,3 @@
     </footer>
   </body>
 </html>
-
