@@ -65,6 +65,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let availableStock = null;
   let latestDeliveryTotal = null;
+  let addressInputTimer = null;
 
   const orderResult = document.getElementById("order-result");
 
@@ -216,6 +217,19 @@ document.addEventListener("DOMContentLoaded", () => {
     const collection = collectionEl.value;
     const address = addressEl ? addressEl.value.trim() : "";
 
+    if (collection === "delivery" && !address) {
+      priceInfo.style.display = "none";
+      calculatedPrice.value = "";
+      latestDeliveryTotal = null;
+      availableStock = null;
+      updateDeliveryMessage();
+      updateOrderResult(
+        "Please enter an address for delivery pricing.",
+        "error",
+      );
+      return;
+    }
+
     if (!size || !date || !collection) {
       priceInfo.style.display = "none";
       calculatedPrice.value = "";
@@ -334,6 +348,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (addressEl) {
     addressEl.addEventListener("change", updatePriceInfo);
     addressEl.addEventListener("blur", updatePriceInfo);
+    addressEl.addEventListener("input", () => {
+      if (addressInputTimer) {
+        clearTimeout(addressInputTimer);
+      }
+      addressInputTimer = setTimeout(updatePriceInfo, 500);
+    });
   }
   const gasTypeEl = document.getElementById("gas-type");
   if (gasTypeEl) {

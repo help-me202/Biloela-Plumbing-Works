@@ -458,6 +458,12 @@ app.get("/api/price", async (req, res, next) => {
     const collectionType = collection === "store" ? "store" : "delivery";
     const available = getInventory(product.id, zone.id);
 
+    if (collectionType === "delivery" && !String(address || "").trim()) {
+      return res.status(400).json({
+        error: "Address is required for delivery pricing.",
+      });
+    }
+
     const zonePrice = zonePrices.find(
       (r) => r.productId === product.id && r.zoneId === zone.id,
     );
