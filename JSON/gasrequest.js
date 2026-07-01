@@ -11,15 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const collectionEl = document.getElementById("fulfillment");
   const priceInfo = document.getElementById("price-info");
   const priceSummary = document.getElementById("price-summary");
-  const deliveryFeeEl = document.getElementById("delivery-fee");
-  const gstAmountEl = document.getElementById("gst-amount");
-  const stockSummary = document.getElementById("stock-summary");
   const deliveryPayment = document.getElementById("delivery-payment");
   const deliveryPaymentPhone = document.getElementById(
     "delivery-payment-phone",
-  );
-  const deliveryPaymentOnline = document.getElementById(
-    "delivery-payment-online",
   );
   const calculatedPrice = document.getElementById("calculatedPrice");
   const submitBtn = document.getElementById("submit-btn");
@@ -105,20 +99,8 @@ document.addEventListener("DOMContentLoaded", () => {
     deliveryPayment.style.display = isDelivery ? "block" : "none";
 
     if (deliveryPaymentPhone) {
-      const totalText =
-        latestDeliveryTotal !== null
-          ? ` AUD ${latestDeliveryTotal.toFixed(2)} (inc. GST).`
-          : " calculated after your address is mapped.";
-      deliveryPaymentPhone.textContent = `For deliveries, please pay over the phone on (07) 4992 6782. The price will be:${totalText}`;
-    }
-
-    if (deliveryPaymentPhone && deliveryPaymentOnline) {
-      deliveryPaymentPhone.style.display = FEATURE_FLAGS.enableOnlinePayment
-        ? "none"
-        : "inline";
-      deliveryPaymentOnline.style.display = FEATURE_FLAGS.enableOnlinePayment
-        ? "inline"
-        : "none";
+      deliveryPaymentPhone.textContent =
+        "For deliveries, please pay over the phone on (07) 4992 6782.";
     }
   }
 
@@ -272,40 +254,18 @@ document.addEventListener("DOMContentLoaded", () => {
         calculatedPrice.value = totalPrice.toFixed(2);
         latestDeliveryTotal = collection === "delivery" ? totalPrice : null;
 
-        const distanceText =
-          data.distance > 0
-            ? `(${data.distance} km from 5 Dunn St)`
-            : data.distanceUnavailable
-              ? `(mapped by zone: ${data.zone.name})`
-              : `(zone: ${data.zone.name})`;
-
-        priceSummary.innerHTML = `Selected: <strong>${data.product.name} ${data.product.size}</strong> x ${quantity} — Subtotal ${collection === "delivery" ? "delivery" : "store"} price <strong>AUD ${subtotal.toFixed(2)}</strong>.`;
-        deliveryFeeEl.textContent =
-          collection === "delivery"
-            ? `Delivery fee: AUD ${data.deliveryFee.toFixed(2)} ${distanceText}`
-            : `Store pickup price applies. Delivery fee is not included.`;
-        if (gstAmountEl) {
-          gstAmountEl.innerHTML = `GST (10%): AUD ${gst.toFixed(2)} <br> <strong>Total (inc. GST): AUD ${totalPrice.toFixed(2)}</strong>`;
-        }
-        stockSummary.textContent = `Stock available in ${data.zone.name}: ${data.available} unit${data.available === 1 ? "" : "s"}.`;
+        priceSummary.innerHTML = `<strong>Total price (inc. GST): AUD ${totalPrice.toFixed(2)}</strong>`;
 
         if (quantity > data.available) {
-          stockSummary.textContent +=
-            " Please reduce quantity or choose another option.";
-          stockSummary.style.color = "#b91c1c";
+          updateOrderResult(
+            "There is not enough stock for that quantity. Please reduce your order or contact us.",
+            "error",
+          );
           submitBtn.disabled = true;
           submitBtn.style.display = "none";
         } else {
-          stockSummary.style.color = "#111";
           submitBtn.disabled = false;
           submitBtn.style.display = "block";
-        }
-
-        if (FEATURE_FLAGS.enableOnlinePayment) {
-          const payLink = deliveryPayment.querySelector("a");
-          if (payLink) {
-            payLink.href = `payment.html?provider=commbank&source=gas-request&amount=${encodeURIComponent(totalPrice.toFixed(2))}`;
-          }
         }
 
         updateDeliveryMessage();
@@ -314,11 +274,6 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("Pricing API Error:", error);
         priceInfo.style.display = "none";
         setResult("", false);
-        deliveryFeeEl.textContent = "";
-        if (gstAmountEl) {
-          gstAmountEl.textContent = "";
-        }
-        stockSummary.textContent = "";
         calculatedPrice.value = "";
         latestDeliveryTotal = null;
         availableStock = null;
@@ -442,12 +397,8 @@ document.addEventListener("DOMContentLoaded", () => {
         if (FEATURE_FLAGS.enableOnlinePayment && collection === "delivery") {
           successMsg += " Delivery payment confirmation is required.";
         } else if (collection === "delivery") {
-          const totalForPhone = Number(calculatedPrice.value || 0);
-          const formattedTotal =
-            Number.isFinite(totalForPhone) && totalForPhone > 0
-              ? ` AUD ${totalForPhone.toFixed(2)} (inc. GST).`
-              : " calculated after your address is mapped.";
-          successMsg += ` For deliveries, please pay over the phone on (07) 4992 6782. The price will be:${formattedTotal}`;
+          successMsg +=
+            " For deliveries, please pay over the phone on (07) 4992 6782.";
         } else if (collection !== "delivery") {
           successMsg += " Please pay upon collection.";
         }
