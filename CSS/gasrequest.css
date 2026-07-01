@@ -252,11 +252,12 @@ h1 {
   border-radius: 10px;
   padding: 12px 14px;
   margin-bottom: 14px;
+  color: #dd22a8;
 }
 
 .price-info p {
   margin: 6px 0;
-  color: #222;
+  color: #dd22a8;
 }
 
 .price-info strong {
