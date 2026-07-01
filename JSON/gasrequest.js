@@ -11,7 +11,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const collectionEl = document.getElementById("fulfillment");
   const priceInfo = document.getElementById("price-info");
   const priceSummary = document.getElementById("price-summary");
-  const deliveryPayment = document.getElementById("delivery-payment");
   const deliveryPaymentPhone = document.getElementById(
     "delivery-payment-phone",
   );
@@ -96,9 +95,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateDeliveryMessage() {
     const isDelivery = collectionEl.value === "delivery";
-    deliveryPayment.style.display = isDelivery ? "block" : "none";
-
     if (deliveryPaymentPhone) {
+      deliveryPaymentPhone.style.display = isDelivery ? "block" : "none";
       deliveryPaymentPhone.textContent =
         "For deliveries, please pay over the phone on (07) 4992 6782.";
     }

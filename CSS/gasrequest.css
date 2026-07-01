@@ -263,17 +263,6 @@ h1 {
   color: #dd22a8;
 }
 
-.delivery-payment {
-  display: block;
-  background-color: #fff0f7;
-  border: 1px solid #dd22a8;
-  border-radius: 10px;
-  padding: 12px 14px;
-  margin-bottom: 14px;
-  color: #a31574;
-  font-weight: 600;
-}
-
 .order-result {
   display: block;
   background-color: #ffffff;
