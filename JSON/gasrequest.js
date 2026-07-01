@@ -64,6 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   let availableStock = null;
+  let latestDeliveryTotal = null;
 
   const orderResult = document.getElementById("order-result");
 
@@ -99,9 +100,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function updateDeliveryMessage() {
-    const is45kg = sizeEl.value === "45kg";
-    deliveryPayment.style.display =
-      collectionEl.value === "delivery" && is45kg ? "block" : "none";
+    const isDelivery = collectionEl.value === "delivery";
+    deliveryPayment.style.display = isDelivery ? "block" : "none";
+
+    if (deliveryPaymentPhone) {
+      const totalText =
+        latestDeliveryTotal !== null
+          ? ` AUD ${latestDeliveryTotal.toFixed(2)} (inc. GST).`
+          : " calculated after your address is mapped.";
+      deliveryPaymentPhone.textContent = `For deliveries, please pay over the phone on (07) 4992 6782. The price will be:${totalText}`;
+    }
 
     if (deliveryPaymentPhone && deliveryPaymentOnline) {
       deliveryPaymentPhone.style.display = FEATURE_FLAGS.enableOnlinePayment
@@ -211,6 +219,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!size || !date || !collection) {
       priceInfo.style.display = "none";
       calculatedPrice.value = "";
+      latestDeliveryTotal = null;
+      updateDeliveryMessage();
       availableStock = null;
       return;
     }
@@ -246,19 +256,20 @@ document.addEventListener("DOMContentLoaded", () => {
         const gst = subtotal * 0.1;
         const totalPrice = subtotal + gst;
         calculatedPrice.value = totalPrice.toFixed(2);
+        latestDeliveryTotal = collection === "delivery" ? totalPrice : null;
 
         const distanceText =
           data.distance > 0
             ? `(${data.distance} km from 5 Dunn St)`
             : `(zone: ${data.zone.name})`;
 
-        priceSummary.innerHTML = `Selected: <strong>${data.product.name} ${data.product.size}</strong> x ${quantity} — Subtotal ${collection === "delivery" ? "approximate delivery" : "store"} price <strong>AUD ${subtotal.toFixed(2)}</strong>.`;
+        priceSummary.innerHTML = `Selected: <strong>${data.product.name} ${data.product.size}</strong> x ${quantity} — Subtotal ${collection === "delivery" ? "delivery" : "store"} price <strong>AUD ${subtotal.toFixed(2)}</strong>.`;
         deliveryFeeEl.textContent =
           collection === "delivery"
-            ? `Approximate delivery fee: AUD ${data.deliveryFee.toFixed(2)} ${distanceText}`
+            ? `Delivery fee: AUD ${data.deliveryFee.toFixed(2)} ${distanceText}`
             : `Store pickup price applies. Delivery fee is not included.`;
         if (gstAmountEl) {
-          gstAmountEl.innerHTML = `GST (10%): AUD ${gst.toFixed(2)} <br> <strong>${collection === "delivery" ? "Approximate Total" : "Total"} (inc. GST): AUD ${totalPrice.toFixed(2)}</strong>`;
+          gstAmountEl.innerHTML = `GST (10%): AUD ${gst.toFixed(2)} <br> <strong>Total (inc. GST): AUD ${totalPrice.toFixed(2)}</strong>`;
         }
         stockSummary.textContent = `Stock available in ${data.zone.name}: ${data.available} unit${data.available === 1 ? "" : "s"}.`;
 
@@ -293,6 +304,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         stockSummary.textContent = "";
         calculatedPrice.value = "";
+        latestDeliveryTotal = null;
         availableStock = null;
         submitBtn.disabled = false;
         submitBtn.style.display = "block";
@@ -407,9 +419,13 @@ document.addEventListener("DOMContentLoaded", () => {
         let successMsg = `Order reserved successfully. Reserved ${data.reserved} unit${data.reserved === 1 ? "" : "s"}. Remaining stock: ${data.remaining}.`;
         if (FEATURE_FLAGS.enableOnlinePayment && collection === "delivery") {
           successMsg += " Delivery payment confirmation is required.";
-        } else if (collection === "delivery" && sizeEl.value === "45kg") {
-          successMsg +=
-            " For 45kg delivery requests, please pay over the phone.";
+        } else if (collection === "delivery") {
+          const totalForPhone = Number(calculatedPrice.value || 0);
+          const formattedTotal =
+            Number.isFinite(totalForPhone) && totalForPhone > 0
+              ? ` AUD ${totalForPhone.toFixed(2)} (inc. GST).`
+              : " calculated after your address is mapped.";
+          successMsg += ` For deliveries, please pay over the phone on (07) 4992 6782. The price will be:${formattedTotal}`;
         } else if (collection !== "delivery") {
           successMsg += " Please pay upon collection.";
         }
