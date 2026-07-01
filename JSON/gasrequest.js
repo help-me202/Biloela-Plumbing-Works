@@ -275,7 +275,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const distanceText =
           data.distance > 0
             ? `(${data.distance} km from 5 Dunn St)`
-            : `(zone: ${data.zone.name})`;
+            : data.distanceUnavailable
+              ? `(mapped by zone: ${data.zone.name})`
+              : `(zone: ${data.zone.name})`;
 
         priceSummary.innerHTML = `Selected: <strong>${data.product.name} ${data.product.size}</strong> x ${quantity} — Subtotal ${collection === "delivery" ? "delivery" : "store"} price <strong>AUD ${subtotal.toFixed(2)}</strong>.`;
         deliveryFeeEl.textContent =

@@ -340,6 +340,31 @@ function findZone() {
   return zones.find((z) => z.name === "Biloela") || zones[0];
 }
 
+function extractPostcode(address = "") {
+  const match = String(address).match(/\b(\d{4})\b/);
+  return match ? match[1] : "";
+}
+
+function findZoneByAddress(address = "") {
+  const normalized = String(address).toLowerCase();
+  const postcode = extractPostcode(address);
+
+  if (postcode) {
+    const byPostcode = zones.find((z) => z.postcodes.includes(postcode));
+    if (byPostcode) return byPostcode;
+  }
+
+  // Simple suburb keyword fallback when postcode is not provided.
+  if (normalized.includes("moura")) {
+    return zones.find((z) => z.name === "Moura") || findZone();
+  }
+  if (normalized.includes("biloela")) {
+    return zones.find((z) => z.name === "Biloela") || findZone();
+  }
+
+  return zones.find((z) => z.name === "Other") || zones[zones.length - 1];
+}
+
 function getProduct(size) {
   return products.find((p) => p.size.toLowerCase() === size.toLowerCase());
 }
@@ -454,9 +479,11 @@ app.get("/api/price", async (req, res, next) => {
       });
     }
 
-    const zone = findZone();
+    const stockZone = findZone();
     const collectionType = collection === "store" ? "store" : "delivery";
-    const available = getInventory(product.id, zone.id);
+    const zone =
+      collectionType === "delivery" ? findZoneByAddress(address) : stockZone;
+    const available = getInventory(product.id, stockZone.id);
 
     if (collectionType === "delivery" && !String(address || "").trim()) {
       return res.status(400).json({
@@ -477,6 +504,7 @@ app.get("/api/price", async (req, res, next) => {
 
     let deliveryFee = 0;
     let distanceVal = 0;
+    let distanceUnavailable = false;
 
     if (collectionType === "delivery") {
       if (address) {
@@ -484,14 +512,8 @@ app.get("/api/price", async (req, res, next) => {
           distanceVal = await getDistance(address);
         } catch (err) {
           console.error("Distance error in /api/price:", err.message);
-
-          // If we fail to get distance, we might fallback to 0 or throw.
-          // Let's fallback to 0 for now so they still get a price, or you can throw.
-          // Throwing is safer for correct pricing.
-          return res.status(400).json({
-            error:
-              "Could not calculate distance. Please ensure you entered a valid delivery address.",
-          });
+          distanceUnavailable = true;
+          distanceVal = 0;
         }
       }
 
@@ -499,12 +521,19 @@ app.get("/api/price", async (req, res, next) => {
         if (!isTuesday) {
           deliveryFee = 190.0 - basePrice; // $209 inc gst -> $190 ex gst
         } else {
-          if (distanceVal <= 15) {
+          if (!distanceUnavailable && distanceVal <= 15) {
             deliveryFee = 170.0 - basePrice; // $187 inc gst -> $170 ex gst
-          } else if (distanceVal <= 30) {
+          } else if (!distanceUnavailable && distanceVal <= 30) {
             deliveryFee = 220.0 - basePrice; // $242 inc gst -> $220 ex gst
           } else {
-            deliveryFee = 240.0 - basePrice; // $264 inc gst -> $240 ex gst
+            // If distance mapping is unavailable, map Tuesday pricing by zone.
+            if (zone.name === "Biloela") {
+              deliveryFee = 170.0 - basePrice;
+            } else if (zone.name === "Moura") {
+              deliveryFee = 220.0 - basePrice;
+            } else {
+              deliveryFee = 240.0 - basePrice;
+            }
           }
         }
 
@@ -539,6 +568,7 @@ app.get("/api/price", async (req, res, next) => {
       basePrice,
       deliveryFee: deliveryFee,
       distance: distanceVal,
+      distanceUnavailable,
       price,
       available,
     });
