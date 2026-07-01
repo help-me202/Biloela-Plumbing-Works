@@ -1,4 +1,7 @@
 body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
   background-color: white;
   background-size: cover;
   background-attachment: scroll;
@@ -251,6 +254,7 @@ h1 {
   border: 1px solid #dd22a8;
   border-radius: 10px;
   padding: 12px 14px;
+  margin-top: 14px;
   margin-bottom: 14px;
   color: #dd22a8;
 }
@@ -262,6 +266,12 @@ h1 {
 
 .price-info strong {
   color: #dd22a8;
+}
+
+#type-container,
+#price-info,
+#delivery-payment-phone {
+  display: none;
 }
 
 .order-result {
@@ -299,7 +309,7 @@ h1 {
   text-align: center;
   padding: 20px;
   color: #666;
-  margin-top: 40px;
+  margin-top: auto;
   border-top: 1px solid #e0e0e0;
 }
 

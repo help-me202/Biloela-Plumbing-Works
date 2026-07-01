@@ -129,6 +129,23 @@ h1 {
     margin: 0 auto;
 }
 
+.lpg-intro {
+    text-align: center;
+    margin: 30px 20px;
+}
+
+.lpg-intro p {
+    font-size: 22px;
+    color: #444;
+    margin: 0;
+}
+
+.lpg-intro a {
+    color: #dd22a8;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
 .peach-block {
     background-color: #fffaf5;
     padding: 40px 20px;
@@ -155,6 +172,11 @@ h1 {
     text-align: center;
     border-bottom: 3px solid #dd22a8;
     padding-bottom: 5px;
+}
+
+.peach-block h2 a {
+    color: black;
+    text-decoration: none;
 }
 
 .site-footer {

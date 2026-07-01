@@ -144,6 +144,16 @@ h1::after {
     grid-column: 1 / -1;
 }
 
+.media-intro {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.media-intro p {
+    font-size: 20px;
+    color: #444;
+}
+
 .text-block-with-image {
     background-color: #f8f9fa;
     border: 1px solid #e0e0e0;
