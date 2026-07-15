@@ -1,4 +1,4 @@
-<!doctype html>
+< !doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -15,29 +15,28 @@
   </head>
   <body>
     <header class="top-header">
-      <a href="index.html" class="persistent-link"><span>Home</span></a>
-      <a href="contact us.html" class="persistent-link">
-        <span>Contact Us</span>
-      </a>
-      <input type="checkbox" id="menu-toggle" class="menu-toggle" />
-      <label for="menu-toggle" class="hamburger">&#9776;</label>
+      <a href="index.html" class="persistent-link"><span>Home</span></a
+      ><a href="contact us.html" class="persistent-link"
+        ><span>Contact Us</span></a
+      ><input type="checkbox" id="menu-toggle" class="menu-toggle" /><label
+        for="menu-toggle"
+        class="hamburger"
+        >&#9776;
+      </label>
       <nav class="nav-links">
-        <a href="partners.html"><span>Our Partner Companies</span></a>
-        <a href="partneringservices.html"><span>Partnering Services</span></a>
-        <a href="Plumbingservices.html"><span>Plumbing Services</span></a>
-        <a href="LPG-gas-information.html"><span>LPG Gas Services</span></a>
-        <a href="MediaReleases.html"><span>Media Releases</span></a>
+        <a href="partners.html"><span>Our Partner Companies</span></a
+        ><a href="partneringservices.html"><span>Partnering Services</span></a
+        ><a href="Plumbingservices.html"><span>Plumbing Services</span></a
+        ><a href="LPG-gas-information.html"><span>LPG Gas Services</span></a
+        ><a href="MediaReleases.html"><span>Media Releases</span></a>
       </nav>
     </header>
-
     <div class="header-banner">
       <h1>Gas Request</h1>
       <p>Please fill out the form below to request a gas collection.</p>
     </div>
-
     <form class="form" novalidate>
-      <label for="name">Name:</label><br />
-      <input
+      <label for="name">Name:</label><br /><input
         type="text"
         id="name"
         name="name"
@@ -45,73 +44,74 @@
         pattern=".*\s+.*"
         title="Please enter your first and last name"
       /><br /><br />
-
       <div id="address-container">
-        <label for="address">Address:</label><br />
-        <input type="text" id="address" name="address" required /><br /><br />
+        <label for="address">Address:</label><br /><input
+          type="text"
+          id="address"
+          name="address"
+          required
+        /><br /><br />
       </div>
-
-      <label for="contact">Contact Number:</label><br />
-      <input type="tel" id="contact" name="contact" required /><br /><br />
-
-      <label for="email">Email:</label><br />
-      <input type="email" id="email" name="email" /><br /><br />
-
+      <label for="contact">Contact Number:</label><br /><input
+        type="tel"
+        id="contact"
+        name="contact"
+        required
+      /><br /><br /><label for="email">Email:</label><br /><input
+        type="email"
+        id="email"
+        name="email"
+      /><br /><br />
       <div class="date-field-group">
-        <label for="date">Date:</label>
-        <input type="date" id="date" name="date" required />
+        <label for="date">Date:</label
+        ><input type="date" id="date" name="date" required />
       </div>
-
-      <br />
-      <label for="size">Size:</label><br />
-      <select id="size" name="Size" required>
+      <br /><label for="size">Size:</label><br /><select
+        id="size"
+        name="Size"
+        required
+      >
         <option value="">Choose size</option>
-        <!-- Added data-weight to track the numerical value -->
+        < !-- Added data-weight to track the numerical value -->
         <option value="3.7kg" data-weight="3.7">3.7kg</option>
         <option value="8.5kg" data-weight="8.5">8.5kg</option>
         <option value="13kg" data-weight="13">13kg</option>
         <option value="15kg" data-weight="15">15kg</option>
         <option value="18kg" data-weight="18">18kg</option>
-        <option value="45kg" data-weight="45">45kg</option>
-      </select>
-      <br /><br />
-
+        <option value="45kg" data-weight="45">45kg</option></select
+      ><br /><br />
       <div id="type-container">
-        <label for="gas-type">Type:</label><br />
-        <select id="gas-type" name="Gas Type">
+        <label for="gas-type">Type:</label><br /><select
+          id="gas-type"
+          name="Gas Type"
+        >
           <option value="exchange">Exchange</option>
-          <option value="forklift">Forklift</option>
-        </select>
-        <br /><br />
+          <option value="forklift">Forklift</option></select
+        ><br /><br />
       </div>
-
-      <label for="quantity">Quantity:</label><br />
-      <input
+      <label for="quantity">Quantity:</label><br /><input
         type="number"
         id="quantity"
         name="Quantity"
         min="1"
         value="1"
         required
-      /><br /><br />
-
-      <label for="fulfillment">Fulfillment Method:</label><br />
-      <select id="fulfillment" name="Fulfillment" required>
+      /><br /><br /><label for="fulfillment">Fulfillment Method:</label
+      ><br /><select id="fulfillment" name="Fulfillment" required>
         <option value="">Choose method</option>
         <option value="pickup">In-Store Pick Up</option>
-        <option value="delivery" id="deliveryOption">Delivery</option>
-      </select>
-      <br /><br />
-
-      <input type="submit" id="submit-btn" value="Submit Request" />
-
+        <option value="delivery" id="deliveryOption">Delivery</option></select
+      ><br /><br /><input
+        type="submit"
+        id="submit-btn"
+        value="Submit Request"
+      />
       <div id="price-info" class="price-info">
         <p id="delivery-payment-phone">
           For deliveries, please pay over the phone on (07) 4992 6782.
         </p>
         <p id="price-summary"></p>
       </div>
-
       <input
         type="hidden"
         id="calculatedPrice"
@@ -120,9 +120,7 @@
       />
       <div id="order-result" class="order-result" aria-live="polite"></div>
     </form>
-
     <script src="../JSON/gasrequest.js"></script>
-
     <footer class="site-footer">
       <p>Biloela Plumbing Works Pty Ltd, &copy; 2026 All rights reserved.</p>
       <p>ABN: 61 137 850 769</p>

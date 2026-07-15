@@ -99,6 +99,7 @@ body {
 }
 
 .header-banner {
+    position: relative;
     background-color: white;
     text-align: center;
     padding: 40px 20px;

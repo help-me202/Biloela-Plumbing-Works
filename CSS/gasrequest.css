@@ -124,6 +124,15 @@ body {
   border-radius: 4px;
 }
 
+.header-banner::before {
+  content: '';
+  display: block;
+  width: 180px;
+  height: 80px;
+  margin: 0 auto 18px;
+  background: url('../Images/logo.png') center center / contain no-repeat;
+}
+
 .header-banner p {
   color: #ffffff;
   font-size: 35px;
