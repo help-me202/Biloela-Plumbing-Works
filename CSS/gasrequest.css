@@ -1,3 +1,12 @@
+.BPW {
+  image: url('../Images/logo.png');
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  width: 180px;
+  height: 80px;
+}
+
 body {
   display: flex;
   flex-direction: column;
@@ -72,10 +81,12 @@ body {
   .top-header a {
     font-size: 0.8rem;
   }
+
   .top-header {
     gap: 10px;
     padding: 10px 15px;
   }
+
   .nav-links {
     gap: 10px;
   }
@@ -159,7 +170,8 @@ h1 {
 
 .form {
   margin-bottom: 15px;
-  background-color: #ffe5b4; /* Light peach */
+  background-color: #ffe5b4;
+  /* Light peach */
   border: 1px solid #e0e0e0;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   border-radius: 10px;
