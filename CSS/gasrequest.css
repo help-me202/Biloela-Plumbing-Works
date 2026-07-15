@@ -118,20 +118,10 @@ body {
   background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url('../Images/truck.jpg');
   background-size: cover;
   background-position: center;
-  flex-direction: column;
   padding: 100px 20px;
   text-align: center;
   margin-bottom: 30px;
   border-radius: 4px;
-}
-
-.header-banner::before {
-  content: '';
-  display: block;
-  width: 180px;
-  height: 80px;
-  margin: 0 auto 18px;
-  background: url('../Images/logo.png') center center / contain no-repeat;
 }
 
 .header-banner p {
