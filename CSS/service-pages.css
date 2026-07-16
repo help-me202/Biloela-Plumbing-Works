@@ -118,15 +118,6 @@ body {
     border-radius: 4px;
 }
 
-.header-banner::before {
-    content: '';
-    display: block;
-    width: 150px;
-    height: 60px;
-    margin: 0 0 18px 0;
-    background: url('../Images/logo.png') center center / contain no-repeat;
-}
-
 h1 {
     color: #333;
     font-family: 'Frank Ruhl Libre', serif;
