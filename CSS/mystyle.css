@@ -69,10 +69,12 @@ body {
   .top-header a {
     font-size: 0.8rem;
   }
+
   .top-header {
     gap: 10px;
     padding: 10px 15px;
   }
+
   .nav-links {
     gap: 10px;
   }
@@ -131,14 +133,7 @@ body {
   border-radius: 4px;
 }
 
-.header-banner::before {
-  content: '';
-  display: block;
-  width: 150px;
-  height: 60px;
-  margin: 0 0 18px 0;
-  background: url('../Images/logo.png') center center / contain no-repeat;
-}
+
 
 .header-banner p {
   color: #ffffff;
