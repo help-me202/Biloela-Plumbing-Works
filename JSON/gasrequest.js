@@ -3,7 +3,22 @@ document.addEventListener("DOMContentLoaded", () => {
     enableOnlinePayment: false,
   };
 
-  const apiBase = ""; // Empty string allows relative paths for both localhost and live domain
+  function getApiBase() {
+    const { protocol, hostname, port } = window.location;
+    const isLocalHost = hostname === "localhost" || hostname === "127.0.0.1";
+
+    if (protocol === "file:") {
+      return "http://localhost:3000";
+    }
+
+    if (isLocalHost && port !== "3000") {
+      return "http://localhost:3000";
+    }
+
+    return "";
+  }
+
+  const apiBase = getApiBase();
   const sizeEl = document.getElementById("size");
   const dateEl = document.getElementById("date");
   const addressEl = document.getElementById("address");
@@ -11,6 +26,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const collectionEl = document.getElementById("fulfillment");
   const priceInfo = document.getElementById("price-info");
   const priceSummary = document.getElementById("price-summary");
+  const gasTypeContainer = document.getElementById("type-container");
+  const gasTypeEl = document.getElementById("gas-type");
   const deliveryPaymentPhone = document.getElementById(
     "delivery-payment-phone",
   );
@@ -22,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const today = new Date().toISOString().split("T")[0];
     dateEl.setAttribute("min", today);
 
-    // Allow opening only from the calendar icon area; block text-field selection clicks.
+    // Allow opening only from the ca lendar icon area; block text-field selection clicks.
     dateEl.addEventListener("mousedown", function (e) {
       const rect = this.getBoundingClientRect();
       const clickX = e.clientX - rect.left;
@@ -59,6 +76,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let availableStock = null;
   let latestDeliveryTotal = null;
   let addressInputTimer = null;
+  const OUT_OF_AREA_MESSAGE = "Sorry, we are unable to deliver to your address";
+  const PRICING_UNAVAILABLE_MESSAGE =
+    "Sorry, we could not calculate pricing right now. Please try again.";
+  const LOCAL_SERVER_UNAVAILABLE_MESSAGE =
+    "The pricing server is not running. Please start the local server on port 3000 and try again.";
 
   const orderResult = document.getElementById("order-result");
 
@@ -102,50 +124,51 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function getSelectedSize() {
-    let size = sizeEl.value;
-    const typeContainer = document.getElementById("type-container");
-    // If the gas type dropdown is visible and the base size is 18kg
-    if (
-      typeContainer &&
-      typeContainer.style.display === "block" &&
-      size === "18kg"
-    ) {
-      const gasTypeEl = document.getElementById("gas-type");
-      if (gasTypeEl && gasTypeEl.value) {
-        const typeStr =
-          gasTypeEl.value.charAt(0).toUpperCase() + gasTypeEl.value.slice(1);
-        size = `${size} ${typeStr}`; // e.g. converts "18kg" to "18kg Exchange"
-      }
+  function sizeRequiresType(size) {
+    return size === "15kg" || size === "18kg";
+  }
+
+  function updateTypeSelectorVisibility() {
+    if (!gasTypeContainer || !gasTypeEl) {
+      return;
     }
-    return size;
+
+    const selectedSize = sizeEl.value;
+    const shouldShowType = sizeRequiresType(selectedSize);
+    gasTypeContainer.style.display = shouldShowType ? "block" : "none";
+    gasTypeEl.required = shouldShowType;
+
+    if (!shouldShowType) {
+      gasTypeEl.value = "";
+    }
+  }
+
+  function getSelectedSize() {
+    const selectedSize = sizeEl.value;
+    if (selectedSize === "18kg" && gasTypeEl && gasTypeEl.value) {
+      const typeText =
+        gasTypeEl.value.charAt(0).toUpperCase() + gasTypeEl.value.slice(1);
+      return `18kg ${typeText}`;
+    }
+    return selectedSize;
   }
 
   function updatePriceInfo() {
     updateOrderResult("", "info");
+    updateTypeSelectorVisibility();
 
     function checkFulfillmentLogic() {
       const sizeSelect = document.getElementById("size");
       const fulfillmentSelect = document.getElementById("fulfillment");
       const deliveryOption = document.getElementById("deliveryOption");
-      const typeContainer = document.getElementById("type-container");
 
       if (!sizeSelect.value) {
-        if (typeContainer) typeContainer.style.display = "none";
         return;
       }
 
       const selectedSizeOption = sizeSelect.options[sizeSelect.selectedIndex];
       const weightAttr = selectedSizeOption.getAttribute("data-weight");
       const weight = weightAttr ? parseFloat(weightAttr) : 0;
-
-      if (typeContainer) {
-        if (weight === 15 || weight === 18) {
-          typeContainer.style.display = "block";
-        } else {
-          typeContainer.style.display = "none";
-        }
-      }
 
       const addressContainer = document.getElementById("address-container");
       const addressInput = document.getElementById("address");
@@ -174,6 +197,19 @@ document.addEventListener("DOMContentLoaded", () => {
     checkFulfillmentLogic();
 
     const size = getSelectedSize();
+    const baseSize = sizeEl.value;
+    const requiresType = sizeRequiresType(baseSize);
+    const selectedType = gasTypeEl ? gasTypeEl.value : "";
+
+    if (requiresType && !selectedType) {
+      priceInfo.style.display = "none";
+      calculatedPrice.value = "";
+      latestDeliveryTotal = null;
+      availableStock = null;
+      updateOrderResult("Please select Exchange or Forklift.", "error");
+      return;
+    }
+
     const sizeWeight = parseFloat(size);
     const isUnder18Kg = Number.isFinite(sizeWeight) && sizeWeight < 18;
     const inStorePickupMessage =
@@ -236,7 +272,9 @@ document.addEventListener("DOMContentLoaded", () => {
           const body = await response.json().catch(() => ({}));
           throw new Error(
             body.error ||
-              (isUnder18Kg ? inStorePickupMessage : "Unable to fetch pricing"),
+              (isUnder18Kg
+                ? inStorePickupMessage
+                : PRICING_UNAVAILABLE_MESSAGE),
           );
         }
         return response.json();
@@ -245,8 +283,18 @@ document.addEventListener("DOMContentLoaded", () => {
         priceInfo.style.display = "block";
         availableStock = data.available;
 
+        const isTuesdayDelivery =
+          data.isTuesday === true ||
+          (data.isTuesday === undefined &&
+            date &&
+            new Date(date).getUTCDay() === 2);
+        const extra45kgDeliveryFee =
+          collection === "delivery" && size === "45kg" && !isTuesdayDelivery
+            ? 35
+            : 0;
         const itemFee = collection === "delivery" ? data.deliveryFee : 0;
-        const subtotal = data.basePrice * quantity + itemFee;
+        const subtotal =
+          data.basePrice * quantity + itemFee + extra45kgDeliveryFee;
         const gst = subtotal * 0.1;
         const totalPrice = subtotal + gst;
         calculatedPrice.value = totalPrice.toFixed(2);
@@ -291,6 +339,23 @@ document.addEventListener("DOMContentLoaded", () => {
           updateOrderResult("", "info");
         } else if (error.message === inStorePickupMessage) {
           updateOrderResult(error.message, "notice");
+        } else if (
+          apiBase === "http://localhost:3000" &&
+          (error.name === "TypeError" ||
+            error.message === "Failed to fetch" ||
+            error.message === "NetworkError when attempting to fetch resource.")
+        ) {
+          updateOrderResult(LOCAL_SERVER_UNAVAILABLE_MESSAGE, "error");
+        } else if (
+          error.message &&
+          (error.message
+            .toLowerCase()
+            .includes("cannot deliver to your address") ||
+            error.message
+              .toLowerCase()
+              .includes("unable to deliver to your address"))
+        ) {
+          updateOrderResult(OUT_OF_AREA_MESSAGE, "error");
         } else {
           updateOrderResult(error.message, "error");
         }
@@ -298,6 +363,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   sizeEl.addEventListener("change", updatePriceInfo);
+  if (gasTypeEl) {
+    gasTypeEl.addEventListener("change", updatePriceInfo);
+  }
   dateEl.addEventListener("input", updatePriceInfo);
   quantityEl.addEventListener("input", updatePriceInfo);
   if (addressEl) {
@@ -310,11 +378,6 @@ document.addEventListener("DOMContentLoaded", () => {
       addressInputTimer = setTimeout(updatePriceInfo, 500);
     });
   }
-  const gasTypeEl = document.getElementById("gas-type");
-  if (gasTypeEl) {
-    gasTypeEl.addEventListener("change", updatePriceInfo);
-  }
-
   collectionEl.addEventListener("change", () => {
     updateDeliveryMessage();
     updatePriceInfo();
@@ -346,9 +409,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const size = getSelectedSize();
+    const baseSize = sizeEl.value;
+    const requiresType = sizeRequiresType(baseSize);
+    const selectedType = gasTypeEl ? gasTypeEl.value : "";
     const date = dateEl.value;
     const collection = collectionEl.value;
     const address = addressEl ? addressEl.value.trim() : "";
+
+    if (requiresType && !selectedType) {
+      updateOrderResult("Please select Exchange or Forklift.", "error");
+      return;
+    }
 
     if (FEATURE_FLAGS.enableOnlinePayment && collection === "delivery") {
       updateOrderResult(
@@ -423,5 +494,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   updateDeliveryMessage();
+  updateTypeSelectorVisibility();
   updatePriceInfo();
 });

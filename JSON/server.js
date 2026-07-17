@@ -20,6 +20,8 @@ const FALLBACK_MAP_URL =
 const MAP_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const MAP_HEALTH_ENABLED = process.env.ENABLE_MAP_HEALTH === "true";
 const MAP_HEALTH_TOKEN = process.env.MAP_HEALTH_TOKEN || "";
+const MAX_DELIVERY_DISTANCE_KM = 94.1;
+const DELIVERY_OUT_OF_AREA_MESSAGE = "Sorry, we cannot deliver to your address";
 let cachedMapLocation = null;
 let mapDiagnostics = {
   lastAttemptAt: null,
@@ -218,24 +220,10 @@ const products = [
     sizeType: "small",
   },
   {
-    id: 3,
-    name: "Gas Bottle",
-    size: "9kg",
-    basePrice: 60.0,
-    sizeType: "small",
-  },
-  {
     id: 4,
     name: "Gas Bottle",
     size: "13kg",
     basePrice: 0.0, // TODO: Update with correct price
-    sizeType: "large",
-  },
-  {
-    id: 5,
-    name: "Gas Bottle",
-    size: "14kg",
-    basePrice: 75.0,
     sizeType: "large",
   },
   {
@@ -256,7 +244,7 @@ const products = [
     id: 8,
     name: "Gas Bottle",
     size: "45kg",
-    basePrice: 165.0, // Base price ex. GST ($181.50 inc. GST)
+    basePrice: 130.0, // Base price ex. GST ($143.00 inc. GST)
     sizeType: "xlarge",
   },
   {
@@ -301,6 +289,12 @@ const inventory = [
   },
   // 15kg
   {
+    productId: 7,
+    zoneId: 1,
+    qty: 8,
+  },
+  // 18kg
+  {
     productId: 8,
     zoneId: 1,
     qty: 10,
@@ -320,20 +314,7 @@ const inventory = [
   // 18kg Exchange
 ];
 
-const zonePrices = [
-  {
-    productId: 3,
-    zoneId: 1,
-    overridePrice: 62.0,
-  },
-  // 9kg
-  {
-    productId: 5,
-    zoneId: 1,
-    overridePrice: 80.0,
-  },
-  // 14kg
-];
+const zonePrices = [];
 
 function findZone() {
   // Since postcode is removed, default to Biloela for pricing and inventory
@@ -517,23 +498,29 @@ app.get("/api/price", async (req, res, next) => {
         }
       }
 
+      // Past-Monto delivery cutoff: decline orders that exceed 94.1 km.
+      if (!distanceUnavailable && distanceVal > MAX_DELIVERY_DISTANCE_KM) {
+        return res.status(400).json({
+          error: DELIVERY_OUT_OF_AREA_MESSAGE,
+        });
+      }
+
       if (product.size === "45kg") {
         if (!isTuesday) {
-          deliveryFee = 190.0 - basePrice; // $209 inc gst -> $190 ex gst
+          if (!distanceUnavailable && distanceVal <= 15) {
+            deliveryFee = 165.0 - basePrice; // $181.50 inc gst -> $165 ex gst
+          } else if (!distanceUnavailable && distanceVal <= 30) {
+            deliveryFee = 175.0 - basePrice; // $192.50 inc gst -> $175 ex gst
+          } else {
+            deliveryFee = 222.73 - basePrice; // $245.00 inc gst -> $222.73 ex gst
+          }
         } else {
           if (!distanceUnavailable && distanceVal <= 15) {
             deliveryFee = 170.0 - basePrice; // $187 inc gst -> $170 ex gst
           } else if (!distanceUnavailable && distanceVal <= 30) {
             deliveryFee = 220.0 - basePrice; // $242 inc gst -> $220 ex gst
           } else {
-            // If distance mapping is unavailable, map Tuesday pricing by zone.
-            if (zone.name === "Biloela") {
-              deliveryFee = 170.0 - basePrice;
-            } else if (zone.name === "Moura") {
-              deliveryFee = 220.0 - basePrice;
-            } else {
-              deliveryFee = 240.0 - basePrice;
-            }
+            deliveryFee = 240.0 - basePrice; // $264.00 inc gst -> $240 ex gst
           }
         }
 
@@ -565,6 +552,7 @@ app.get("/api/price", async (req, res, next) => {
       },
 
       collection: collectionType,
+      isTuesday,
       basePrice,
       deliveryFee: deliveryFee,
       distance: distanceVal,
