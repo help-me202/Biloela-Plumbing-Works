@@ -105,15 +105,6 @@ body {
     padding: 40px 20px;
 }
 
-.header-banner::before {
-    content: '';
-    display: block;
-    width: 150px;
-    height: 60px;
-    margin: 0 0 18px 0;
-    background: url('../Images/logo.png') center center / contain no-repeat;
-}
-
 .header-banner h1 {
     margin: 0 0 10px 0;
     font-size: 2.5rem;

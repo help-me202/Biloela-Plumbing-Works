@@ -136,15 +136,6 @@ body {
   border-radius: 4px;
 }
 
-.header-banner::before {
-  content: '';
-  display: block;
-  width: 150px;
-  height: 60px;
-  margin: 0 0 18px 0;
-  background: url('../Images/logo.png') center center / contain no-repeat;
-}
-
 .header-banner p {
   color: #666;
   font-size: 20px;
@@ -224,7 +215,7 @@ h1::after {
   align-items: stretch;
 }
 
-.map-container > p {
+.map-container>p {
   text-align: center;
   color: #666;
   padding: 20px;
