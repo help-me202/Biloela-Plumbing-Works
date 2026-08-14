@@ -1,7 +1,8 @@
 {
   "scripts": {
     "start": "node JSON/server.js",
-    "dev": "node JSON/server.js"
+    "dev": "node JSON/server.js",
+    "test:gas-email": "node scripts/test-gas-email.js"
   },
   "engines": {
     "node": ">=18"

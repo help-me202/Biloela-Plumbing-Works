@@ -221,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const day = new Date(date).getUTCDay(); // 0 is Sunday, 6 is Saturday
       if (day === 0 || day === 6) {
         updateOrderResult(
-          "We are closed on weekends. Please select a weekday.",
+          "Please select a weekday, alternatively if urgent please call (07) 4992 6782. Thank you.\n\nFor emergencies after 12pm please call 0429 931 915. Thank you.",
           "error",
         );
         dateEl.value = ""; // Clear the invalid date
@@ -283,18 +283,8 @@ document.addEventListener("DOMContentLoaded", () => {
         priceInfo.style.display = "block";
         availableStock = data.available;
 
-        const isTuesdayDelivery =
-          data.isTuesday === true ||
-          (data.isTuesday === undefined &&
-            date &&
-            new Date(date).getUTCDay() === 2);
-        const extra45kgDeliveryFee =
-          collection === "delivery" && size === "45kg" && !isTuesdayDelivery
-            ? 35
-            : 0;
         const itemFee = collection === "delivery" ? data.deliveryFee : 0;
-        const subtotal =
-          data.basePrice * quantity + itemFee + extra45kgDeliveryFee;
+        const subtotal = data.basePrice * quantity + itemFee;
         const gst = subtotal * 0.1;
         const totalPrice = subtotal + gst;
         calculatedPrice.value = totalPrice.toFixed(2);
@@ -462,7 +452,8 @@ document.addEventListener("DOMContentLoaded", () => {
         return data;
       })
       .then((data) => {
-        let successMsg = `Order reserved successfully. Reserved ${data.reserved} unit${data.reserved === 1 ? "" : "s"}. Remaining stock: ${data.remaining}.`;
+        let successMsg =
+          "Thank you. Your gas request has been received successfully.";
         if (FEATURE_FLAGS.enableOnlinePayment && collection === "delivery") {
           successMsg += " Delivery payment confirmation is required.";
         } else if (collection === "delivery") {
@@ -472,7 +463,6 @@ document.addEventListener("DOMContentLoaded", () => {
           successMsg += " Please pay upon collection.";
         }
         updateOrderResult(successMsg, "success");
-        updatePriceInfo();
       })
       .catch((error) => {
         console.error("Reservation API Error:", error);
@@ -481,7 +471,7 @@ document.addEventListener("DOMContentLoaded", () => {
           error.message === "Product not found"
         ) {
           updateOrderResult(
-            "Order request submitted. Please pay upon collection.",
+            "Thank you. Your gas request has been received successfully. Please pay upon collection.",
             "success",
           );
         } else {

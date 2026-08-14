@@ -3,6 +3,7 @@ const cors = require("cors");
 const multer = require("multer");
 const app = express();
 const path = require("path");
+const { buildGasReservationEmail } = require("./gas-email-template");
 
 // Tell dotenv to look for the .env file in the parent directory
 require("dotenv").config({
@@ -20,8 +21,10 @@ const FALLBACK_MAP_URL =
 const MAP_CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 const MAP_HEALTH_ENABLED = process.env.ENABLE_MAP_HEALTH === "true";
 const MAP_HEALTH_TOKEN = process.env.MAP_HEALTH_TOKEN || "";
-const MAX_DELIVERY_DISTANCE_KM = 94.1;
+const MAX_DELIVERY_DISTANCE_KM = 40;
 const DELIVERY_OUT_OF_AREA_MESSAGE = "Sorry, we cannot deliver to your address";
+const WEEKEND_DELIVERY_UNAVAILABLE_MESSAGE =
+  "Please select a weekday, alternatively if urgent please call (07) 4992 6782. Thank you.\n\nFor emergencies after 12pm please call 0429 931 915. Thank you.";
 let cachedMapLocation = null;
 let mapDiagnostics = {
   lastAttemptAt: null,
@@ -59,18 +62,27 @@ const apiLimiter = rateLimit({
 app.use("/api/", apiLimiter);
 
 // SMTP configuration
+const SMTP_FROM_EMAIL =
+  process.env.SMTP_USER ||
+  process.env.SMTP_EMAIL ||
+  process.env.EMAIL_USER ||
+  "";
+const SMTP_PASSWORD = process.env.SMTP_PASS || process.env.EMAIL_PASS || "";
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || "smtp.gmail.com",
   port: process.env.SMTP_PORT || 587,
   secure: process.env.SMTP_SECURE === "true",
   auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
+    user: SMTP_FROM_EMAIL,
+    pass: SMTP_PASSWORD,
   },
 });
 
 const PAYMENT_NOTIFICATION_EMAIL =
   process.env.PAYMENT_NOTIFICATION_EMAIL || "workshop@biloelaplumbingworks.com";
+const GAS_REQUEST_NOTIFICATION_EMAILS =
+  process.env.GAS_REQUEST_NOTIFICATION_EMAILS ||
+  "admin@biloelaplumbingworks.com,workshop@biloelaplumbingworks.com,service@biloelaplumbingworks.com";
 
 function pickFirstValue(payload, keys) {
   for (const key of keys) {
@@ -109,6 +121,13 @@ function normalizePaymentStatus(rawStatus) {
   return "pending";
 }
 
+function isWeekendDate(date) {
+  if (!date) return false;
+
+  const day = new Date(`${date}T00:00:00Z`).getUTCDay();
+  return day === 0 || day === 6;
+}
+
 function getCommbankPaymentDetails(payload) {
   const reference = pickFirstValue(payload, [
     "reference",
@@ -141,15 +160,15 @@ function getCommbankPaymentDetails(payload) {
 }
 
 async function sendPaymentNotificationEmail(eventType, details, payload) {
-  if (!process.env.SMTP_USER) return;
+  if (!SMTP_FROM_EMAIL) return;
 
   const amountText = details.amount
     ? `AUD ${details.amount}`
     : "Not supplied by gateway";
 
   await transporter.sendMail({
-    from: `"Biloela Plumbing Works"<${process.env.SMTP_USER}>`,
-    replyTo: details.customerEmail || process.env.SMTP_USER,
+    from: `"Biloela Plumbing Works"<${SMTP_FROM_EMAIL}>`,
+    replyTo: details.customerEmail || SMTP_FROM_EMAIL,
     to: PAYMENT_NOTIFICATION_EMAIL,
     subject: `CommBank Payment ${eventType}: ${details.status.toUpperCase()}`,
     text:
@@ -244,7 +263,7 @@ const products = [
     id: 8,
     name: "Gas Bottle",
     size: "45kg",
-    basePrice: 130.0, // Base price ex. GST ($143.00 inc. GST)
+    basePrice: 160.0, // Base price ex. GST ($176.00 inc. GST)
     sizeType: "xlarge",
   },
   {
@@ -483,6 +502,12 @@ app.get("/api/price", async (req, res, next) => {
     // Check if the selected date is a Tuesday (Day 2 of the week)
     const isTuesday = date ? new Date(date).getUTCDay() === 2 : false;
 
+    if (collectionType === "delivery" && isWeekendDate(date)) {
+      return res.status(400).json({
+        error: WEEKEND_DELIVERY_UNAVAILABLE_MESSAGE,
+      });
+    }
+
     let deliveryFee = 0;
     let distanceVal = 0;
     let distanceUnavailable = false;
@@ -498,7 +523,7 @@ app.get("/api/price", async (req, res, next) => {
         }
       }
 
-      // Past-Monto delivery cutoff: decline orders that exceed 94.1 km.
+      // Decline deliveries that exceed the 40 km service limit.
       if (!distanceUnavailable && distanceVal > MAX_DELIVERY_DISTANCE_KM) {
         return res.status(400).json({
           error: DELIVERY_OUT_OF_AREA_MESSAGE,
@@ -508,7 +533,7 @@ app.get("/api/price", async (req, res, next) => {
       if (product.size === "45kg") {
         if (!isTuesday) {
           if (!distanceUnavailable && distanceVal <= 15) {
-            deliveryFee = 165.0 - basePrice; // $181.50 inc gst -> $165 ex gst
+            deliveryFee = 190.0 - basePrice; // $209.00 inc GST -> $190 ex GST
           } else if (!distanceUnavailable && distanceVal <= 30) {
             deliveryFee = 175.0 - basePrice; // $192.50 inc gst -> $175 ex gst
           } else {
@@ -575,6 +600,12 @@ app.post("/api/reserve", async (req, res) => {
     });
   }
 
+  if (collection === "delivery" && isWeekendDate(date)) {
+    return res.status(400).json({
+      error: WEEKEND_DELIVERY_UNAVAILABLE_MESSAGE,
+    });
+  }
+
   const product = getProduct(size);
 
   if (!product)
@@ -598,31 +629,24 @@ app.post("/api/reserve", async (req, res) => {
   if (record) record.qty = record.qty - quantity;
 
   try {
-    if (process.env.SMTP_USER) {
+    if (SMTP_FROM_EMAIL) {
       await transporter.sendMail({
-        from: `"${name || "Customer"}"<${process.env.SMTP_USER}
+        from: `"${name || "Customer"}"<${SMTP_FROM_EMAIL}
 
             >`,
         replyTo: email,
-        to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
+        to: GAS_REQUEST_NOTIFICATION_EMAILS,
         subject: "New Gas Reservation",
-        text: `Name: ${name || "N/A"}
-
-            \nEmail: ${email || "N/A"}
-
-            \nContact: ${contact || "N/A"}
-
-            \nSize: ${size}
-
-            \nQuantity: ${quantity}
-
-            \nDate: ${date}
-
-            \nCollection: ${collection}
-
-            \nAddress: ${address || "N/A"}
-
-            `,
+        ...buildGasReservationEmail({
+          name,
+          email,
+          contact,
+          size,
+          quantity,
+          date,
+          collection,
+          address,
+        }),
       });
     }
   } catch (err) {
@@ -685,13 +709,13 @@ app.post("/api/contact", async (req, res) => {
   }
 
   try {
-    if (process.env.SMTP_USER) {
+    if (SMTP_FROM_EMAIL) {
       await transporter.sendMail({
-        from: `"${name}"<${process.env.SMTP_USER}
+        from: `"${name}"<${SMTP_FROM_EMAIL}
 
             >`,
         replyTo: email,
-        to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
+        to: process.env.RECEIVER_EMAIL || SMTP_FROM_EMAIL,
         subject: "New Contact Enquiry",
         text: `Name: ${name}
 
@@ -745,7 +769,7 @@ app.post(
     }
 
     try {
-      if (process.env.SMTP_USER) {
+      if (SMTP_FROM_EMAIL) {
         const attachments = [];
 
         if (req.files.resume && req.files.resume[0]) {
@@ -763,11 +787,11 @@ app.post(
         }
 
         await transporter.sendMail({
-          from: `"${name}"<${process.env.SMTP_USER}
+          from: `"${name}"<${SMTP_FROM_EMAIL}
 
             >`,
           replyTo: email,
-          to: process.env.RECEIVER_EMAIL || process.env.SMTP_USER,
+          to: process.env.RECEIVER_EMAIL || SMTP_FROM_EMAIL,
           subject: "New Employment Application",
           text: `Name: ${name}
 

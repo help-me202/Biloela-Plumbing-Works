@@ -231,6 +231,7 @@ h1 {
   font-size: 1.2rem;
   padding: 12px 20px;
   margin-top: 10px;
+  margin-bottom: 14px;
   width: 100%;
   box-sizing: border-box;
   cursor: pointer;
@@ -286,6 +287,7 @@ h1 {
   padding: 12px 14px;
   margin-bottom: 16px;
   font-weight: 600;
+  white-space: pre-line;
 }
 
 .order-result:empty {
@@ -293,8 +295,8 @@ h1 {
 }
 
 .order-result.error {
-  border-color: #b91c1c;
-  color: #b91c1c;
+  border-color: #dd22a8;
+  color: #dd22a8;
 }
 
 .order-result.success {
