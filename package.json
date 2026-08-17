@@ -4,10 +4,10 @@
     "dev": "node JSON/server.js",
     "test:gas-email": "node scripts/test-gas-email.js",
     "build": "node scripts/build-static-site.js",
-    "deploy": "vercel"
+    "deploy": "npx vercel"
   },
   "engines": {
-    "node": ">=18"
+    "node": "24.x"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^1.69.1",
@@ -21,8 +21,7 @@
     "nodemailer": "^8.0.11"
   },
   "devDependencies": {
-    "serve": "^14.2.3",
-    "vercel": "^35.2.1"
+    "serve": "^14.2.3"
   },
   "name": "biloela-waste-recycling-backend",
   "version": "1.0.0",
