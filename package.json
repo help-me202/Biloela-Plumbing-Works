@@ -3,7 +3,7 @@
     "start": "node JSON/server.js",
     "dev": "node JSON/server.js",
     "test:gas-email": "node scripts/test-gas-email.js",
-    "build": "echo 'No build step required'",
+    "build": "node scripts/build-static-site.js",
     "deploy": "vercel"
   },
   "engines": {
