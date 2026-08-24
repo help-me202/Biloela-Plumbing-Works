@@ -15,7 +15,21 @@ for (const directory of directories) {
       ? outputDirectory
       : path.join(outputDirectory, directory);
 
-  fs.cpSync(source, destination, { recursive: true });
+  if (directory !== "HTML") {
+    fs.cpSync(source, destination, { recursive: true });
+    continue;
+  }
+
+  for (const file of fs.readdirSync(source)) {
+    const sourceFile = path.join(source, file);
+    const destinationFile = path.join(destination, file);
+    const content = fs
+      .readFileSync(sourceFile, "utf8")
+      .replaceAll("../CSS/", "CSS/")
+      .replaceAll("../Images/", "Images/");
+
+    fs.writeFileSync(destinationFile, content);
+  }
 }
 
 console.log("Static site built in public/");
