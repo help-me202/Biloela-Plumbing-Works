@@ -26,7 +26,8 @@ for (const directory of directories) {
     const content = fs
       .readFileSync(sourceFile, "utf8")
       .replaceAll("../CSS/", "CSS/")
-      .replaceAll("../Images/", "Images/");
+      .replaceAll("../Images/", "Images/")
+      .replaceAll("../JSON/", "JSON/");
 
     fs.writeFileSync(destinationFile, content);
   }
