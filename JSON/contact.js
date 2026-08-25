@@ -63,6 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
           name: document.getElementById("enq-name")?.value || "",
           phone: document.getElementById("enq-phone")?.value || "",
           email: document.getElementById("enq-email")?.value || "",
+          subject: document.getElementById("enq-subject")?.value || "",
+          message: document.getElementById("enq-message")?.value || "",
         }),
       })
         .then((res) => res.json())

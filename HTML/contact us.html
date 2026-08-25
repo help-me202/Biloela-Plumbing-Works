@@ -69,6 +69,29 @@
                   required
                 />
               </div>
+              <div class="form-group">
+                <select id="enq-subject" required>
+                  <option value="" disabled selected>
+                    What is your enquiry about?
+                  </option>
+                  <option value="Residential Plumbing">Residential Plumbing</option>
+                  <option value="Commercial Plumbing">Commercial Plumbing</option>
+                  <option value="Emergency Services">Emergency Services</option>
+                  <option value="Liquid Waste Removal">Liquid Waste Removal</option>
+                  <option value="Hook Bins/Skip Bins">Hook Bins/Skip Bins</option>
+                  <option value="Potable Water">Potable Water</option>
+                  <option value="LPG Gas">LPG Gas</option>
+                  <option value="Payment/Account Enquiry">Payment/Account Enquiry</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <textarea
+                  id="enq-message"
+                  placeholder="Tell us more about your enquiry"
+                  rows="4"
+                ></textarea>
+              </div>
               <button type="submit">Contact Us</button>
             </div>
             <div id="enquiry-message"></div>

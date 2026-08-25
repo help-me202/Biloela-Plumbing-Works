@@ -708,9 +708,9 @@ app.post("/api/notify-payment", async (req, res) => {
 });
 
 app.post("/api/contact", async (req, res) => {
-  const { name, phone, email } = req.body;
+  const { name, phone, email, subject, message } = req.body;
 
-  if (!name || !phone || !email) {
+  if (!name || !phone || !email || !subject) {
     return res.status(400).json({
       error: "Please fill out all fields.",
     });
@@ -724,12 +724,16 @@ app.post("/api/contact", async (req, res) => {
             >`,
         replyTo: email,
         to: resolveEmailRecipient(process.env.RECEIVER_EMAIL || SMTP_FROM_EMAIL),
-        subject: "New Contact Enquiry",
+        subject: `New Contact Enquiry: ${subject}`,
         text: `Name: ${name}
 
             \nPhone: ${phone}
 
             \nEmail: ${email}
+
+            \nEnquiry about: ${subject}
+
+            \nMessage: ${message || "N/A"}
 
             `,
       });
