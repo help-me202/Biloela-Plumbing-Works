@@ -1189,10 +1189,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-app
-  .listen(port, () => {
-    console.log(`Server listening on http: //localhost:${port}`);
-  })
+// When imported by the Vercel serverless function (api/index.js), the app is
+// exported instead of listening on a local port.
+if (require.main === module) {
+  app
+    .listen(port, () => {
+      console.log(`Server listening on http: //localhost:${port}`);
+    })
   .on("error", (err) => {
     if (err.code === "EADDRINUSE") {
       console.error(`FATAL ERROR: Port ${port}
@@ -1204,3 +1207,6 @@ app
           `);
     }
   });
+}
+
+module.exports = app;
