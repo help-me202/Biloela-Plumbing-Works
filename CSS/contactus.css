@@ -357,6 +357,11 @@ h1::after {
   background-color: #c01b91;
 }
 
+.enquiry-form button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
 #enquiry-message {
   text-align: center;
   font-weight: bold;

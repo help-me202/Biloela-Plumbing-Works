@@ -45,9 +45,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const contactForm = document.getElementById("contact-form");
   if (contactForm) {
+    const submitBtn = document.getElementById("enq-submit");
+    const requiredFields = [
+      document.getElementById("enq-name"),
+      document.getElementById("enq-phone"),
+      document.getElementById("enq-email"),
+      document.getElementById("enq-subject"),
+      document.getElementById("enq-message"),
+    ].filter(Boolean);
+
+    function updateSubmitState() {
+      if (!submitBtn) return;
+      const allFilled = requiredFields.every(
+        (field) => field.value.trim() !== "",
+      );
+      submitBtn.disabled = !allFilled;
+    }
+
+    requiredFields.forEach((field) => {
+      field.addEventListener("input", updateSubmitState);
+      field.addEventListener("change", updateSubmitState);
+    });
+    updateSubmitState();
+
     contactForm.addEventListener("submit", function (e) {
       e.preventDefault();
-      const btn = this.querySelector("button");
+      const btn = submitBtn;
       const msg = document.getElementById("enquiry-message");
 
       if (!btn || !msg) return;
@@ -80,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
           msg.style.color = "#b91c1c";
         })
         .finally(() => {
-          btn.disabled = false;
+          updateSubmitState();
         });
     });
   }

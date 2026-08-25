@@ -710,7 +710,7 @@ app.post("/api/notify-payment", async (req, res) => {
 app.post("/api/contact", async (req, res) => {
   const { name, phone, email, subject, message } = req.body;
 
-  if (!name || !phone || !email || !subject) {
+  if (!name || !phone || !email || !subject || !message) {
     return res.status(400).json({
       error: "Please fill out all fields.",
     });

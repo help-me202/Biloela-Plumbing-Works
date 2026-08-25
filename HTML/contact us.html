@@ -86,13 +86,16 @@
                 </select>
               </div>
               <div class="form-group">
-                <textarea
+                <label for="enq-message"
+                  >Enquiry <span class="required">*</span></label
+                ><textarea
                   id="enq-message"
                   placeholder="Tell us more about your enquiry"
                   rows="4"
+                  required
                 ></textarea>
               </div>
-              <button type="submit">Contact Us</button>
+              <button type="submit" id="enq-submit" disabled>Contact Us</button>
             </div>
             <div id="enquiry-message"></div>
           </form>
