@@ -47,7 +47,7 @@ async function sendTestEmail() {
   const info = await transporter.sendMail({
     from: `"${testRequest.name}"<${smtpUser}>`,
     replyTo: testRequest.email,
-    to: "admin@biloelaplumbingworks.com,workshop@biloelaplumbingworks.com,service@biloelaplumbingworks.com",
+    to: "stores@biloelaplumbingworks.com",
     subject: "Test: New Gas Reservation",
     ...buildGasReservationEmail(testRequest, { isTest: true }),
   });

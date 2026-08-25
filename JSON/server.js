@@ -78,6 +78,14 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// When enabled, every outbound notification email is redirected here instead of the real recipients.
+const TEST_EMAIL_MODE = process.env.TEST_EMAIL_MODE === "true";
+const TEST_EMAIL_RECIPIENT = "stores@biloelaplumbingworks.com";
+
+function resolveEmailRecipient(realRecipient) {
+  return TEST_EMAIL_MODE ? TEST_EMAIL_RECIPIENT : realRecipient;
+}
+
 const PAYMENT_NOTIFICATION_EMAIL =
   process.env.PAYMENT_NOTIFICATION_EMAIL || "workshop@biloelaplumbingworks.com";
 const GAS_REQUEST_NOTIFICATION_EMAILS =
@@ -169,7 +177,7 @@ async function sendPaymentNotificationEmail(eventType, details, payload) {
   await transporter.sendMail({
     from: `"Biloela Plumbing Works"<${SMTP_FROM_EMAIL}>`,
     replyTo: details.customerEmail || SMTP_FROM_EMAIL,
-    to: PAYMENT_NOTIFICATION_EMAIL,
+    to: resolveEmailRecipient(PAYMENT_NOTIFICATION_EMAIL),
     subject: `CommBank Payment ${eventType}: ${details.status.toUpperCase()}`,
     text:
       `Event: ${eventType}\n` +
@@ -635,7 +643,7 @@ app.post("/api/reserve", async (req, res) => {
 
             >`,
         replyTo: email,
-        to: GAS_REQUEST_NOTIFICATION_EMAILS,
+        to: resolveEmailRecipient(GAS_REQUEST_NOTIFICATION_EMAILS),
         subject: "New Gas Reservation",
         ...buildGasReservationEmail({
           name,
@@ -715,7 +723,7 @@ app.post("/api/contact", async (req, res) => {
 
             >`,
         replyTo: email,
-        to: process.env.RECEIVER_EMAIL || SMTP_FROM_EMAIL,
+        to: resolveEmailRecipient(process.env.RECEIVER_EMAIL || SMTP_FROM_EMAIL),
         subject: "New Contact Enquiry",
         text: `Name: ${name}
 
@@ -791,7 +799,7 @@ app.post(
 
             >`,
           replyTo: email,
-          to: process.env.RECEIVER_EMAIL || SMTP_FROM_EMAIL,
+          to: resolveEmailRecipient(process.env.RECEIVER_EMAIL || SMTP_FROM_EMAIL),
           subject: "New Employment Application",
           text: `Name: ${name}
 
