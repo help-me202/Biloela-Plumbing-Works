@@ -308,6 +308,24 @@ h1::after {
   resize: vertical;
 }
 
+.enquiry-required-block {
+  margin-top: 4px;
+  padding: 10px 12px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  background: #f8f8f8;
+}
+
+.enquiry-required-label {
+  font-weight: 700;
+  color: #333;
+}
+
+.enquiry-required-block small {
+  color: #666;
+  font-size: 13px;
+}
+
 .resume-upload {
   display: flex;
   flex-direction: column;
