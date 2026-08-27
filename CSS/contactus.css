@@ -1,5 +1,5 @@
 body {
-  background-color: white;
+  background-color: #f3f3f3;
   background-size: cover;
   background-attachment: scroll;
   background-repeat: no-repeat;
@@ -129,27 +129,29 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-color: white;
-  padding: 40px 20px;
+  background-color: #f3f3f3;
+  padding: 34px 20px 18px;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 26px;
   border-radius: 4px;
 }
 
 .header-banner p {
   color: #666;
-  font-size: 20px;
-  margin: 15px 0 0 0;
+  font-size: 24px;
+  margin: 16px 0 0 0;
+  letter-spacing: 0.01em;
 }
 
 h1 {
-  color: #333;
+  color: #3a3a3a;
   font-family: 'Frank Ruhl Libre', serif;
   margin: 0;
-  font-size: 50px;
+  font-size: 52px;
   display: inline-block;
   padding-bottom: 5px;
   position: relative;
+  font-weight: 500;
 }
 
 h1::after {
@@ -168,8 +170,8 @@ h1::after {
   justify-content: center;
   align-items: stretch;
   gap: 40px;
-  max-width: 1200px;
-  margin: 20px auto 40px;
+  max-width: 1280px;
+  margin: 0 auto 40px;
   padding: 0 20px;
   flex-wrap: wrap;
 }
@@ -179,7 +181,8 @@ h1::after {
   flex-direction: column;
   gap: 40px;
   flex: 1 1 450px;
-  max-width: 1000px;
+  max-width: 1100px;
+  width: 100%;
 }
 
 .contact-details-row {
@@ -231,11 +234,11 @@ h1::after {
 }
 
 .enquiry-section {
-  padding: 40px;
-  background-color: #f8f9fa;
-  border: 1px solid #e0e0e0;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  border-radius: 10px;
+  padding: 28px 30px 34px;
+  background-color: #f0f0f0;
+  border: 1px solid #d6d6d6;
+  box-shadow: none;
+  border-radius: 12px;
   box-sizing: border-box;
   width: 100%;
   margin: 0;
@@ -243,9 +246,11 @@ h1::after {
 
 .enquiry-section h2 {
   margin-top: 0;
-  color: #333;
+  color: #3b3b3b;
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 26px;
+  font-size: clamp(2rem, 3vw, 4rem);
+  font-weight: 700;
 }
 
 .employment-section {
@@ -277,8 +282,9 @@ h1::after {
 
 .form-inputs {
   display: flex;
-  gap: 15px;
+  gap: 18px;
   flex-wrap: wrap;
+  align-items: stretch;
 }
 
 .form-group {
@@ -286,26 +292,41 @@ h1::after {
   flex-direction: column;
   gap: 5px;
   text-align: left;
-  flex: 1;
+  flex: 1 1 0;
   min-width: 200px;
 }
 
 .form-group input {
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
+  width: 100%;
+  min-height: 62px;
+  padding: 18px 16px;
+  border: 1px solid #d2d2d2;
+  border-radius: 8px;
+  font-size: 18px;
   font-family: inherit;
+  background: rgba(255, 255, 255, 0.35);
+  color: #333;
+  box-sizing: border-box;
 }
 
 .form-group select,
 .form-group textarea {
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
+  width: 100%;
+  padding: 16px 14px;
+  border: 1px solid #d2d2d2;
+  border-radius: 8px;
+  font-size: 18px;
   font-family: inherit;
   resize: vertical;
+  background: rgba(255, 255, 255, 0.35);
+  color: #333;
+  box-sizing: border-box;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: #5d5d5d;
+  opacity: 1;
 }
 
 .enquiry-required-block {
@@ -357,18 +378,21 @@ h1::after {
 }
 
 .enquiry-form button {
-  background-color: #dd22a8;
+  background-color: #e521a9;
   color: white;
   border: none;
-  padding: 14px;
-  border-radius: 6px;
-  font-size: 18px;
-  font-weight: bold;
+  padding: 18px 22px;
+  border-radius: 8px;
+  font-size: clamp(1.6rem, 2vw, 2.2rem);
+  font-weight: 700;
   cursor: pointer;
   margin-top: 0;
-  flex: 1;
-  min-width: 150px;
+  flex: 1 1 220px;
+  min-width: 180px;
+  max-width: 260px;
+  min-height: 62px;
   transition: background-color 0.3s;
+  align-self: flex-end;
 }
 
 .enquiry-form button:hover {
